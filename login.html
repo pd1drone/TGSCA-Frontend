@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/css/enrollmenttab.css">
+  <title>Side Form Example</title>
+  <style>
+    body {
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+        
+    }
+    .side-form {
+
+        background: linear-gradient(90deg, hsla(194, 100%, 84%, 0.85  ), white  );
+        position: fixed;
+        width: 35%;
+        height: 100%;
+        top: 50%;
+        right: 0;
+        transform: translate(0, -50%);
+        padding: 20px;
+        border: 1px solid #ccc;
+    }
+
+    .side-form label,
+    .side-form input {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .side-form input[type="submit"],
+    .btn
+     {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;   
+      cursor: pointer;
+      border-radius: 6px;
+      padding-left: 75px;
+      padding-right: 75px;
+      display: block;
+      margin: auto;
+    }
+    .logo 
+    {
+        border-radius: 50%;
+        text-align: center;
+        display: block;
+        margin: auto;
+        margin-top: 10vh;
+
+    }
+    h2
+    {
+        text-align: center;
+    }
+    h4
+    {
+        text-align: center;
+    }
+    .flds{
+        width: 90%;
+        padding: 10px;
+        border-radius: 5px;
+
+
+    }
+  </style>
+  <script>
+window.onload = function() 
+{
+            var dateInput = document.getElementById("myDateInput");
+            dateInput.placeholder = "nyemas";
+        };
+
+  </script>
+</head>
+<body>
+  <div class="side-form">
+    <img src="images/logo.jpg" height="75px", width="75px" class="logo" >
+    <h2>TGSCA Student Module</h2>
+    <h4> Sign-in to start your session</h4>
+    <form action="#" method="post">
+         
+        <label for="Student Number">Student Number*</label>
+        <input type="tel" id="tel" class="flds" placeholder="xxxx-xxxxxx-xx-x" name="user_num">
+        <br>
+
+      <label for="Birth Date">Birth Date*</label>
+      <input type="date" placeholder="date" class="flds" value="" required>
+      <br>
+
+      <label for="password">Password*</label>
+      <input type="password"  placeholder="Password" class="flds" value="" required></input>
+      <br>
+        <a name="admin-login" href="admin-login.html" class="stretched-link">Login as Admin</a>
+      <br>
+      <button type="button" class="btn" value="Submit">Log In</button>
+    </form>
+  </div>
+</body>
+</html>

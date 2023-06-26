@@ -1,0 +1,11 @@
+body {
+    background-image: url('/images/bgTGSCA.jpg');
+    background-repeat:no-repeat;
+    background-size: 111%;
+} 
+
+.stretched-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px; /* Adjust this value as needed */
+}

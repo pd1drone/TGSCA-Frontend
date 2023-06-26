@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="templatemo">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <!-- Custom -->
+    <link rel="stylesheet" href="/css/hoveretc.css">
+    <!-- Google Font -->
+    <link href='//fonts.googleapis.com/css?family=Signika:400,300,600,700' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Chewy' rel='stylesheet' type='text/css'>
+
+    <title>Student Management</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        form {
+            margin-bottom: 20px;
+        }
+    
+        form input[type="text"],
+        form input[type="email"],
+        form button {
+            margin-bottom: 10px;
+        }
+    
+        form button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    
+        form button:hover {
+            background-color: #45a049;
+        }
+    
+        .highlighted {
+            background-color: lightblue;
+        }
+    
+        /* Additional CSS for DataTables */
+        div.dataTables_wrapper {
+            margin-bottom: 20px;
+        }
+    
+        div.dataTables_wrapper .dataTables_length {
+            float: left;
+        }
+    
+        div.dataTables_wrapper .dataTables_filter {
+            float: right;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate {
+            text-align: center;
+            clear: both;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-left: 2px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: #eee;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #999;
+            cursor: default;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .ellipsis.disabled {
+            cursor: default;
+        }
+    </style>
+</head>
+<body id="home" data-spy="scroll" data-target=".navbar-collapse">
+    <!-- Start navigation -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+                <a href="dashboard.html" class="navbar-brand smoothScroll"><h1>STUDENT MANAGEMENT<h1></a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+					<li><a href="dashboard.html" class="smoothScroll">DASHBOARD</a></li>
+					<li><a href="student.html" class="smoothScroll">STUDENT</a></li>
+					<li><a href="requirements.html" class="smoothScroll">REQUIREMENTS</a></li>
+					<li><a href="subjects.html" class="smoothScroll">SUBJECTS</a></li>
+					<li><a href="enrolled.html" class="smoothScroll">ENROLLED</a></li>
+					<li><a href="approve_reject.html" class="smoothScroll">APPROVE/REJECT ENROLLED STUDENT</a></li>
+					<li><a href="appointment.html" class="smoothScroll">APPOINTMENT</a></li>
+					<li><a href="teachers.html" class="smoothScroll">TEACHERS</a></li>
+					<li><a href="/index.html" class="smoothScroll">LOGOUT</a></li> 
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <div class="modal fade" id="CreateStudent" tabindex="-1" role="dialog" aria-labelledby="CreateStudentLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title" id="CreateStudentLabel">CREATE STUDENT</h3>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <label for="student-number" class="col-form-label">Student Number:</label>
+                  <input type="text" class="form-control" id="student-number">
+                </div>
+                <div class="form-group">
+                  <label for="name" class="col-form-label">Name:</label>
+                  <input type="text" class="form-control" id="name">
+                </div>
+                <div class="form-group">
+                  <label for="email" class="col-form-label">Email:</label>
+                  <input type="email" class="form-control" id="email">
+                </div>
+                <div class="form-group">
+                  <label for="dob" class="col-form-label">Date of Birth:</label>
+                  <input type="date" class="form-control" id="dob">
+                </div>
+                <div class="form-group">
+                  <label for="grade-level" class="col-form-label">Grade Level:</label>
+                  <select class="form-control" id="grade-level">
+                    <option>Kindergarden</option>
+                    <option>Prep</option>
+                    <option>Grade 1</option>
+                    <option>Grade 2</option>
+                    <option>Grade 3</option>
+                    <option>Grade 4</option>
+                    <option>Grade 5</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                    <option>Grade 9</option>
+                    <option>Grade 10</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="address" class="col-form-label">Address:</label>
+                  <input type="text" class="form-control" id="address">
+                </div>
+                <div class="form-group">
+                  <label for="contact-number" class="col-form-label">Contact Number:</label>
+                  <input type="tel" class="form-control" id="contact-number" pattern="09[0-9]{9}">
+                </div>
+                <div class="form-group">
+                  <label for="username" class="col-form-label">Username:</label>
+                  <input type="text" class="form-control" id="username">
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    
+
+
+      <div class="container">
+        <div class="container">
+            <div class="row">
+                <div class="text-center">
+                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateStudent">Add Student</button>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <!-- Table to display student data -->
+        <table id="studentTable" class="display">
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Date of Birth</th>
+                    <th>Grade Level</th>
+                    <th>Address</th>
+                    <th>Contact Number</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Rows will be dynamically generated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/smoothscroll.js"></script>
+    <script src="/js/custom.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        // Example of dynamically generating rows
+        data = [
+            { id: 1, studentNumber: '2021001', name: 'John Doe', email: 'johndoe@example.com', dob: '01/01/1990', gradeLevel: '10th', address: '123 Main St', contactNumber: '123-456-7890', username: 'johndoe', password: '********' },
+            { id: 2, studentNumber: '2021002', name: 'Jane Smith', email: 'janesmith@example.com', dob: '02/02/1995', gradeLevel: '12th', address: '456 Elm St', contactNumber: '987-654-3210', username: 'janesmith', password: '********' },
+           // Add more data objects as needed
+        ];
+
+        // Function to generate the rows dynamically
+        function generateStudentRows() {
+            let rows = '';
+            data.forEach((student) => {
+                rows += `
+                    <tr>
+                        <td class="studentNumber">${student.studentNumber}</td>
+                        <td>${student.name}</td>
+                        <td>${student.email}</td>
+                        <td>${student.dob}</td>
+                        <td>${student.gradeLevel}</td>
+                        <td>${student.address}</td>
+                        <td>${student.contactNumber}</td>
+                        <td>${student.username}</td>
+                        <td>
+                            <input type="password" class="form-control passwordInput" value="${student.password}" disabled>
+                            <button type="button" class="btn btn-outline-secondary passwordToggleBtn">Show Password</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger deleteBtn">Delete Student</button>
+                            <button class="btn btn-primary updateBtn">Update Student</button>
+                        </td>
+                        <input type="hidden" class="studentId" value="${student.id}">
+                    </tr>
+                `;
+            });
+            $('#studentTableBody').html(rows);
+        }
+
+        // Generate the student rows
+        generateStudentRows();
+
+        // Initialize DataTables with options
+        $('#studentTable').DataTable({
+            scrollY: '400px',
+            scrollCollapse: true,
+            lengthMenu: [10, 20, 50, 100],
+            pageLength: 10
+        });
+
+        // Event listener for the password toggle button
+        $(document).on('click', '.passwordToggleBtn', function () {
+            const passwordInput = $(this).siblings('.passwordInput');
+            const passwordFieldType = passwordInput.attr('type');
+
+            if (passwordFieldType === 'password') {
+                passwordInput.attr('type', 'text');
+                $(this).text('Hide Password');
+            } else {
+                passwordInput.attr('type', 'password');
+                $(this).text('Show Password');
+            }
+        });
+        
+        function addStudent() {
+            // Get the form input values
+            var studentNumber = document.getElementById("student-number").value;
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var dob = document.getElementById("dob").value;
+            var gradeLevel = document.getElementById("grade-level").value;
+            var address = document.getElementById("address").value;
+            var contactNumber = document.getElementById("contact-number").value;
+            var username = document.getElementById("username").value;
+
+            // Create a new row for the data table
+            var table = document.getElementById("dataTable");
+            var newRow = table.insertRow();
+
+            // Populate the row cells with the form input values
+            var cell1 = newRow.insertCell(0);
+            cell1.innerHTML = studentNumber;
+
+            var cell2 = newRow.insertCell(1);
+            cell2.innerHTML = name;
+
+            var cell3 = newRow.insertCell(2);
+            cell3.innerHTML = email;
+
+            var cell4 = newRow.insertCell(3);
+            cell4.innerHTML = dob;
+
+            var cell5 = newRow.insertCell(4);
+            cell5.innerHTML = gradeLevel;
+
+            var cell6 = newRow.insertCell(5);
+            cell6.innerHTML = address;
+
+            var cell7 = newRow.insertCell(6);
+            cell7.innerHTML = contactNumber;
+
+            var cell8 = newRow.insertCell(7);
+            cell8.innerHTML = username;
+
+            // Clear the form input values
+            document.getElementById("student-number").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("dob").value = "";
+            document.getElementById("grade-level").value = "";
+            document.getElementById("address").value = "";
+            document.getElementById("contact-number").value = "";
+            document.getElementById("username").value = "";
+
+            // Close the modal
+            $('#CreateStudent').modal('hide');
+        }
+
+        // Event listener for the delete and update buttons
+        $(document).on('click', '.deleteBtn, .updateBtn', function () {
+            const studentRow = $(this).closest('tr');
+            const studentNumber = studentRow.find('.studentNumber').text();
+            const studentName = studentRow.find('td:nth-child(2)').text();
+            const studentEmail = studentRow.find('td:nth-child(3)').text();
+            const studentId = studentRow.find('.studentId').val();
+
+            console.log('Student Number:', studentNumber);
+            console.log('Student Name:', studentName);
+            console.log('Student Email:', studentEmail);
+            console.log('Student ID:', studentId);
+        });
+    </script>
+</body>
+</html>
