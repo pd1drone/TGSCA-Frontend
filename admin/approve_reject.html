@@ -117,11 +117,11 @@
                     <span class="icon icon-bar"></span>
                     <span class="icon icon-bar"></span>
                 </button>
-                <a href="dashboard.html" class="navbar-brand smoothScroll"><h1>APPROVE/REJECT ENROLLED STUDENT<h1></a>
+                <a href="index.html" class="navbar-brand smoothScroll"><h1>APPROVE/REJECT ENROLLED STUDENT<h1></a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav navbar-right">
-					<li><a href="dashboard.html" class="smoothScroll">DASHBOARD</a></li>
+					<li><a href="index.html" class="smoothScroll">DASHBOARD</a></li>
 					<li><a href="student.html" class="smoothScroll">STUDENT</a></li>
 					<li><a href="requirements.html" class="smoothScroll">REQUIREMENTS</a></li>
 					<li><a href="subjects.html" class="smoothScroll">SUBJECTS</a></li>
@@ -162,6 +162,8 @@
                     <th>Form 137 Status</th>
                     <th>Good Moral Certificate</th>
                     <th>Good Moral Certificate Status</th>
+                    <th>Registration Fee</th>
+                    <th>Registration Fee Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -190,7 +192,9 @@
                 form137: '<a href="path/to/file2.pdf">File 2</a>',
                 form137Status: 'Uploaded',
                 goodMoralCertificate: '<a href="path/to/file2.pdf">File 2</a>',
-                goodMoralCertificateStatus: 'Uploaded'
+                goodMoralCertificateStatus: 'Uploaded',
+                registrationfee: '<a href="path/to/file2.pdf">File 2</a>',
+                registrationfeeStatus: 'Uploaded'
             },
             {
                 studentNumber: '67890',
@@ -201,7 +205,9 @@
                 form137: '<a href="path/to/file2.pdf">File 2</a>',
                 form137Status: 'Uploaded',
                 goodMoralCertificate: '<a href="path/to/file2.pdf">File 2</a>',
-                goodMoralCertificateStatus: 'Uploaded'
+                goodMoralCertificateStatus: 'Uploaded',
+                registrationfee: '<a href="path/to/file2.pdf">File 2</a>',
+                registrationfeeStatus: 'Uploaded'
             },
             // Add more enrolled students as needed
         ];
@@ -220,6 +226,8 @@
                 rows += '<td>' + student.form137Status + '</td>';
                 rows += '<td>' + student.goodMoralCertificate + '</td>';
                 rows += '<td>' + student.goodMoralCertificateStatus + '</td>';
+                rows += '<td>' + student.registrationfee + '</td>';
+                rows += '<td>' + student.registrationfeeStatus + '</td>';
                 rows += '<td>';
                 rows += '<button class="btn btn-danger deleteBtn">Reject</button>';
                 rows += ' <button class="btn btn-primary updateBtn">Approve</button>';

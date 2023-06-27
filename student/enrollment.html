@@ -21,6 +21,91 @@
 	<link href='//fonts.googleapis.com/css?family=Chewy' rel='stylesheet' type='text/css'>
 
   <title>Enrollment</title>
+      <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        form {
+            margin-bottom: 20px;
+        }
+    
+        form input[type="text"],
+        form input[type="email"],
+        form button {
+            margin-bottom: 10px;
+        }
+    
+        form button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    
+        form button:hover {
+            background-color: #45a049;
+        }
+    
+        .highlighted {
+            background-color: lightblue;
+        }
+    
+        /* Additional CSS for DataTables */
+        div.dataTables_wrapper {
+            margin-bottom: 20px;
+        }
+    
+        div.dataTables_wrapper .dataTables_length {
+            float: left;
+        }
+    
+        div.dataTables_wrapper .dataTables_filter {
+            float: right;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate {
+            text-align: center;
+            clear: both;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-left: 2px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: #eee;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #999;
+            cursor: default;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+        }
+    
+        div.dataTables_wrapper .dataTables_paginate .ellipsis.disabled {
+            cursor: default;
+        }
+    </style>
 </head>
 <body id="home" data-spy="scroll" data-target=".navbar-collapse">
 	<!-- start navigation -->
@@ -33,12 +118,12 @@
 					<span class="icon icon-bar"></span>
 				</button>
 
-			  <a href="dashboard.html" class="navbar-brand smoothScroll"><h1>Enrollment<h1></a>
+			  <a href="index.html" class="navbar-brand smoothScroll"><h1>Enrollment<h1></a>
 				
 			</div>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav navbar-right">
-					<li><a href="dashboard.html" class="smoothScroll">DASHBOARD</a></li>
+					<li><a href="index.html" class="smoothScroll">DASHBOARD</a></li>
 					<li><a href="profile.html" class="smoothScroll">PROFILE</a></li>
 					<li><a href="requirements.html" class="smoothScroll">REQUIREMENTS</a></li>
 					<li><a href="enrollment.html" class="smoothScroll">ENROLLMENT</a></li>
@@ -49,26 +134,138 @@
 		</div>
 	</div>
 
+	<br>
     <br>
     <br>
     <br>
     <br>
     <br>
     <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    
-  
-  
-<script src="/js/jquery.js"></script>
-<script src="/js/bootstrap.min.js"></script>
-<script src="/js/plugins.js"></script>
-<script src="/js/smoothscroll.js"></script>
-<script src="/js/custom.js"></script>
 
+	<div class="modal fade" id="createEnrollee" tabindex="-1" role="dialog" aria-labelledby="CreateEnrolleeLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title" id="CreateEnrolleeLabel">Enroll Subject</h3>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form>
+
+						<div class="form-group">
+							<label for="subject" class="col-form-label">Subject:</label>
+							<select class="form-control" id="subject">
+								<option>English</option>
+								<option>Math</option>
+								<!-- Options for subjects -->
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="schedule" class="col-form-label">Schedule:</label>
+							<select class="form-control" id="schedule">
+								<option>Monday 10:00AM - 11:00AM</option>
+								<option>Tuesday 9:00AM - 10:00AM</option>
+								<!-- Add more schedule options as needed -->
+							</select>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" onclick="addEnrollee()">Enroll Subject</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+	
+	
+	
+	
+    
+
+    
+
+    <div class="container">
+        <div class="container">
+            <div class="row">
+                <div class="text-center">
+                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#createEnrollee">Enroll Subject</button>
+                </div>
+            </div>
+        </div>
+        <br>
+    
+        <!-- Table to display enrollee data -->
+        <table id="enrolleeTable" class="display">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Schedule</th>
+                    <th>Teacher</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="enrolleeTableBody">
+                <!-- Rows will be dynamically generated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/smoothscroll.js"></script>
+    <script src="/js/custom.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        // Example of dynamically generating enrollee rows
+        var enrollees = [
+            {
+                subject: 'Mathematics',
+                schedule: 'Monday 8:00AM - 9:00AM',
+                teacher: 'John Doe'
+            },
+            {
+                subject: 'Science',
+                schedule: 'Tuesday 10:00AM - 11:00AM',
+                teacher: 'Jane Smith'
+            },
+            // Add more enrollees as needed
+        ];
+
+        // Function to generate the enrollee rows dynamically
+        function generateEnrolleeRows() {
+            var rows = '';
+            enrollees.forEach(function(enrollee) {
+                rows += '<tr>';
+                rows += '<td>' + enrollee.subject + '</td>';
+                rows += '<td>' + enrollee.schedule + '</td>';
+                rows += '<td>' + enrollee.teacher + '</td>';
+                rows += '<td>';
+                rows += '<button class="btn btn-danger deleteBtn">Delete Subject</button>';
+                rows += ' <button class="btn btn-primary updateBtn">Update Subject</button>';
+                rows += '</td>';
+                rows += '</tr>';
+            });
+            $('#enrolleeTableBody').html(rows);
+        }
+
+        // Generate the enrollee rows
+        generateEnrolleeRows();
+
+        // Initialize DataTables with options
+        $('#enrolleeTable').DataTable({
+            scrollY: '400px',
+            scrollCollapse: true,
+            lengthMenu: [10, 20, 50, 100],
+            pageLength: 10
+        });
+    </script>
 </body>
 </html>
 
