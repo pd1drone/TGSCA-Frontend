@@ -73,6 +73,17 @@ window.onload = function()
         };
 
   </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      var studentLogin = document.getElementById("loginAdmin");
+      studentLogin.addEventListener("click",function(){
+        sessionStorage.setItem("UserType", "Admin");
+        window.location.href= "/admin"
+      });
+    });
+  </script>
+
 </head>
 <body>
   <div class="side-form">
@@ -88,7 +99,7 @@ window.onload = function()
       <input type="password"  id="password" name="password" placeholder="Password" class="flds" value="" required></input>
         <a name="student-login" href="login.html" class="stretched-link">Login as Student</a>
       <br>
-      <button type="button" class="btn" value="Submit">Log In</button>
+      <button id="loginAdmin" type="button" class="btn" value="Submit">Log In</button>
     </form>
   </div>
 </body>
