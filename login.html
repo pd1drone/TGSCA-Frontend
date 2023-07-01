@@ -65,22 +65,72 @@
 
     }
   </style>
+  <script src="js/api.js"></script>
+  <script src="js/md5.js"></script>
   <script>
-window.onload = function() 
-{
-            var dateInput = document.getElementById("myDateInput");
-            dateInput.placeholder = "nyemas";
-        };
 
-  </script>
-
-  <script>
     document.addEventListener("DOMContentLoaded", () => {
-      var studentLogin = document.getElementById("loginStudent");
-      studentLogin.addEventListener("click",function(){
-        sessionStorage.setItem("UserType", "Student");
-        window.location.href= "/student"
-      });
+        var studentLogin = document.getElementById("loginStudent");
+        studentLogin.addEventListener("click",function(){
+
+          var User = document.getElementById("studentnumber").value;
+          var Pass = document.getElementById("password").value;
+          var dob = document.getElementById("dob").value;
+
+          console.log(User);
+          console.log(Pass);
+          console.log(dob);
+
+          var hash = md5(Pass);
+		      console.log(hash);
+
+          
+          var dateObj = new Date(dob);
+          var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+          var day = dateObj.getDate().toString().padStart(2, '0');
+          var year = dateObj.getFullYear().toString();
+
+          var formattedDate = month + '/' + day + '/' + year;
+		      console.log(formattedDate);
+
+          var login = {
+            studentNumber: User,
+            password: hash,
+            dateOfBirth: formattedDate
+          };
+
+          var url = endpoint + "/loginStudent"
+
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(login)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              if (data.Authenticated){
+                sessionStorage.setItem("UserType", data.UserType);
+                window.location.href = "/student";
+                
+              }else{
+                alert("Wrong Credentials!");
+                document.getElementById('loginform').reset();
+              }
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+        });
     });
   </script>
 
@@ -90,18 +140,18 @@ window.onload = function()
     <img src="images/logo.jpg" height="75px", width="75px" class="logo" >
     <h2>TGSCA Student Module</h2>
     <h4> Sign-in to start your session</h4>
-    <form action="#" method="post">
+    <form id="loginform" action="#" method="post">
          
         <label for="Student Number">Student Number*</label>
-        <input type="tel" id="tel" class="flds" placeholder="xxxx-xxxxxx-xx-x" name="user_num">
+        <input id="studentnumber" type="tel" id="tel" class="flds" placeholder="xxxx-xxxxxx-xx-x" name="studentnumber">
         <br>
 
       <label for="Birth Date">Birth Date*</label>
-      <input type="date" placeholder="date" class="flds" value="" required>
+      <input type="date" placeholder="date" class="flds" value="" id="dob" required>
       <br>
 
       <label for="password">Password*</label>
-      <input type="password"  placeholder="Password" class="flds" value="" required></input>
+      <input type="password"  placeholder="Password" id="password" class="flds" value="" required></input>
       <br>
         <a name="admin-login" href="admin-login.html" class="stretched-link">Login as Admin</a>
       <br>
