@@ -277,5 +277,74 @@
             pageLength: 10
         });
     </script>
+  <script src="js/api.js"></script>
+  <script src="js/md5.js"></script>
+  <script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+        var studentLogin = document.getElementById("loginStudent");
+        studentLogin.addEventListener("click",function(){
+
+          var User = document.getElementById("studentnumber").value;
+          var Pass = document.getElementById("password").value;
+          var dob = document.getElementById("dob").value;
+
+          console.log(User);
+          console.log(Pass);
+          console.log(dob);
+
+          var hash = md5(Pass);
+		      console.log(hash);
+
+          
+          var dateObj = new Date(dob);
+          var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+          var day = dateObj.getDate().toString().padStart(2, '0');
+          var year = dateObj.getFullYear().toString();
+
+          var formattedDate = month + '/' + day + '/' + year;
+		      console.log(formattedDate);
+
+          var login = {
+            studentNumber: User,
+            password: hash,
+            dateOfBirth: formattedDate
+          };
+
+          var url = endpoint + "/loginStudent"
+
+        //   fetch(url, {
+        //     method: 'POST',
+        //     headers: {
+        //       'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify(login)
+        //   })
+        //     .then(function(response) {
+        //       if (response.ok) {
+        //         return response.json();
+        //       } else {
+        //         throw new Error('Request failed with status:', response.status);
+        //       }
+        //     })
+        //     .then(function(data) {
+        //       // Handle the response here
+        //       console.log(data);
+        //       if (data.Authenticated){
+        //         sessionStorage.setItem("UserType", data.UserType);
+        //         window.location.href = "/student";
+                
+        //       }else{
+        //         alert("Wrong Credentials!");
+        //         document.getElementById('loginform').reset();
+        //       }
+        //     })
+        //     .catch(function(error) {
+        //       alert(error);
+        //     });
+        });
+    });
+  </script>
+
 </body>
 </html>

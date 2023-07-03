@@ -105,6 +105,29 @@
         div.dataTables_wrapper .dataTables_paginate .ellipsis.disabled {
             cursor: default;
         }
+        #studentTable {
+          table-layout: fixed; /* Forces the table to have a fixed layout */
+          width: 100%; /* Sets the table width to 100% of its container */
+        }
+
+        #studentTable thead th {
+          white-space: nowrap; /* Prevents column text from wrapping */
+        }
+
+        #studentTable td,
+        #studentTable th {
+          vertical-align: middle; /* Aligns the content vertically in the cells */
+          text-align: center; /* Aligns the content horizontally in the cells */
+        }
+
+        .dataTables_scrollBody {
+          overflow-x: auto; /* Enables horizontal scrolling */
+          max-height: 300px; /* Limits the height of the scrollable area */
+        }
+
+        .dataTables_scrollBody thead th:last-child {
+          min-width: 100px; /* Adjusts the width of the last column to avoid misalignment */
+        }
     </style>
 </head>
 <body id="home" data-spy="scroll" data-target=".navbar-collapse">
@@ -205,12 +228,13 @@
                 <div class="form-group">
                   <label for="contact-number" class="col-form-label">Contact Number:</label>
                   <input type="tel" class="form-control" id="contact-number" pattern="09[0-9]{9}">
+                  <input type="hidden" id="modaluserIDforUpdate" value="0">
                 </div>
               </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
+              <button type="button" id="addStudent" data-dismiss="modal" class="btn btn-primary" >Add Student</button>
             </div>
           </div>
         </div>
@@ -224,7 +248,7 @@
         <div class="container">
             <div class="row">
                 <div class="text-center">
-                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateStudent">Add Student</button>
+                    <button id="addupdatestd" type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateStudent">Add Student</button>
                 </div>
             </div>
         </div>
@@ -255,141 +279,324 @@
     <script src="/js/logout.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating rows
-        data = [
-            { id: 1, studentNumber: '2021001', name: 'John Doe', email: 'johndoe@example.com', dob: '01/01/1990', gradeLevel: '10th', address: '123 Main St', contactNumber: '123-456-7890', username: 'johndoe', password: '********' },
-            { id: 2, studentNumber: '2021002', name: 'Jane Smith', email: 'janesmith@example.com', dob: '02/02/1995', gradeLevel: '12th', address: '456 Elm St', contactNumber: '987-654-3210', username: 'janesmith', password: '********' },
-           // Add more data objects as needed
-        ];
+    <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        GetUserTable();
+        CreateStudent();
+        document.getElementById("addupdatestd").addEventListener("click", function(){
+          // Update the modal title
+          $('#CreateStudentLabel').text('CREATE STUDENT');
+          
+          // Update the button text
+          // Get the button element by its ID
+          var addButton = document.getElementById('addStudent');
 
-        // Function to generate the rows dynamically
-        function generateStudentRows() {
-            let rows = '';
-            data.forEach((student) => {
-                rows += `
-                    <tr>
-                        <td class="studentNumber">${student.studentNumber}</td>
-                        <td>${student.name}</td>
-                        <td>${student.email}</td>
-                        <td>${student.dob}</td>
-                        <td>${student.gradeLevel}</td>
-                        <td>${student.address}</td>
-                        <td>${student.contactNumber}</td>
-                        <td>${student.username}</td>
-                        <td>
-                            <input type="password" class="form-control passwordInput" value="${student.password}" disabled>
-                            <button type="button" class="btn btn-outline-secondary passwordToggleBtn">Show Password</button>
-                        </td>
-                        <td>
-                            <button class="btn btn-danger deleteBtn">Delete Student</button>
-                            <button class="btn btn-primary updateBtn">Update Student</button>
-                        </td>
-                        <input type="hidden" class="studentId" value="${student.id}">
-                    </tr>
-                `;
-            });
-            $('#studentTableBody').html(rows);
-        }
-
-        // Generate the student rows
-        generateStudentRows();
-
-        // Initialize DataTables with options
-        $('#studentTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
+          // Update the text of the button
+          addButton.textContent = 'Add Student';
         });
+    });        
 
-        // Event listener for the password toggle button
-        $(document).on('click', '.passwordToggleBtn', function () {
+    function GetUserTable() {
+      var url = endpoint + "/readStudent"
+
+      var readStudent = {
+        StudentNumber: 0
+      };
+
+      console.log(readStudent);
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readStudent)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            var name = data.FirstName + " " + data.MiddleName + " " + data.LastName;
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.StudentNumber}</td>
+                <td>${name}</td>
+                <td>${data.Email}</td>
+                <td>${data.DateOfBirth}</td>
+                <td>${data.GradeLevel}</td>
+                <td>${data.Address}</td>
+                <td>${data.ContactNumber}</td>
+                <td>${data.Username}</td>
+                <td>
+                  <input type="password" class="form-control passwordInput" value="${data.Password}" disabled>
+                  <button type="button" class="btn btn-outline-secondary passwordToggleBtn">Show Password</button>
+                </td>
+                <td>
+                  <button class="btn btn-danger deleteBtn">Delete Student</button>
+                  <button class="btn btn-primary updateBtn">Update Student</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#studentTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#studentTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#studentTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'StudentNumber' },
+              { data: null, render: function(data, type, row) {
+                  return row.FirstName + ' ' + row.MiddleName + ' ' + row.LastName;
+                }
+              },
+              { data: 'Email' },
+              { data: 'DateOfBirth' },
+              { data: 'GradeLevel' },
+              { data: 'Address' },
+              { data: 'ContactNumber' },
+              { data: 'Username' },
+              { data: null, render: function(data, type, row) {
+                  return `<input type="password" class="form-control passwordInput" value="${row.Password}" disabled>
+                          <button type="button" class="btn btn-outline-secondary passwordToggleBtn">Show Password</button>`;
+                }
+              },
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.UserID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.UserID}" onclick="DeleteStudent(${row.UserID})">Delete Student</button>
+                        <button class="btn btn-primary updateBtn" data-userid="${row.UserID}" onclick="UpdateStudent('${row.StudentNumber}', '${row.UserID}', '${row.FirstName}', '${row.LastName}','${row.MiddleName}','${row.Email}','${row.DateOfBirth}','${row.GradeLevel}','${row.Address}','${row.ContactNumber}')">Update Student</button>`;
+                }
+              } 
+            ]
+          });
+
+          // Event listener for the password toggle button
+          $(document).on('click', '.passwordToggleBtn', function() {
             const passwordInput = $(this).siblings('.passwordInput');
             const passwordFieldType = passwordInput.attr('type');
 
             if (passwordFieldType === 'password') {
-                passwordInput.attr('type', 'text');
-                $(this).text('Hide Password');
+              passwordInput.attr('type', 'text');
+              $(this).text('Hide Password');
             } else {
-                passwordInput.attr('type', 'password');
-                $(this).text('Show Password');
+              passwordInput.attr('type', 'password');
+              $(this).text('Show Password');
             }
+          });
+        })
+        .catch(function(error) {
+          alert(error);
         });
+    }
+
+
+    function CreateStudent(){
+        var studentLogin = document.getElementById("addStudent");
+        studentLogin.addEventListener("click",function(){
+          var studentnumber = document.getElementById("student-number").value;
+          var firstname = document.getElementById("first-name").value;
+          var lastname = document.getElementById("last-name").value;
+          var middlename = document.getElementById("middle-name").value;
+          var email = document.getElementById("email").value;
+          var dob = document.getElementById("dob").value;
+          var gradelevel = document.getElementById("grade-level").value;
+          var address = document.getElementById("address").value;
+          var contactnumber = document.getElementById("contact-number").value;
+
+          console.log(studentnumber);
+          
+          var dateObj = new Date(dob);
+          var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+          var day = dateObj.getDate().toString().padStart(2, '0');
+          var year = dateObj.getFullYear().toString();
+
+          var formattedDate = month + '/' + day + '/' + year;
+		      console.log(formattedDate);
+
+          if (document.getElementById('addStudent').textContent == "Add Student"){
+              var createStudent = {
+              StudentNumber: parseInt(studentnumber),
+              FirstName: firstname,
+              LastName: lastname,
+              MiddleName: middlename,
+              Email: email,
+              DateOfBirth: formattedDate,
+              GradeLevel: gradelevel,
+              Address: address,
+              ContactNumber: contactnumber
+            };
+
+            console.log(createStudent);
+            var url = endpoint + "/createStudent"
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createStudent)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetUserTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+          } else{
+            var url = endpoint + "/updateStudent"
+
+            var dateObj = new Date(document.getElementById("dob").value);
+            var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+            var day = dateObj.getDate().toString().padStart(2, '0');
+            var year = dateObj.getFullYear().toString();
+
+            var formattedDateReq = month + '/' + day + '/' + year;
+            console.log(formattedDateReq);
+
+          console.log(parseInt(document.getElementById("userIDforUpdate").value))
         
-        function addStudent() {
-            // Get the form input values
-            var studentNumber = document.getElementById("student-number").value;
-            var name = document.getElementById("name").value;
-            var email = document.getElementById("email").value;
-            var dob = document.getElementById("dob").value;
-            var gradeLevel = document.getElementById("grade-level").value;
-            var address = document.getElementById("address").value;
-            var contactNumber = document.getElementById("contact-number").value;
-            var username = document.getElementById("username").value;
+            var updateStudent = {
+              StudentNumber: parseInt(document.getElementById("student-number").value),
+              UserID: parseInt(document.getElementById("modaluserIDforUpdate").value),
+              FirstName: document.getElementById("first-name").value,
+              MiddleName: document.getElementById("middle-name").value,
+              LastName: document.getElementById("last-name").value,
+              Email: document.getElementById("email").value,
+              DateOfBirth: formattedDateReq,
+              GradeLevel: document.getElementById("grade-level").value,
+              Address: document.getElementById("address").value = address,
+              ContactNumber: document.getElementById("contact-number").value
+            }
 
-            // Create a new row for the data table
-            var table = document.getElementById("dataTable");
-            var newRow = table.insertRow();
+            console.log(updateStudent);
 
-            // Populate the row cells with the form input values
-            var cell1 = newRow.insertCell(0);
-            cell1.innerHTML = studentNumber;
-
-            var cell2 = newRow.insertCell(1);
-            cell2.innerHTML = name;
-
-            var cell3 = newRow.insertCell(2);
-            cell3.innerHTML = email;
-
-            var cell4 = newRow.insertCell(3);
-            cell4.innerHTML = dob;
-
-            var cell5 = newRow.insertCell(4);
-            cell5.innerHTML = gradeLevel;
-
-            var cell6 = newRow.insertCell(5);
-            cell6.innerHTML = address;
-
-            var cell7 = newRow.insertCell(6);
-            cell7.innerHTML = contactNumber;
-
-            var cell8 = newRow.insertCell(7);
-            cell8.innerHTML = username;
-
-            // Clear the form input values
-            document.getElementById("student-number").value = "";
-            document.getElementById("name").value = "";
-            document.getElementById("email").value = "";
-            document.getElementById("dob").value = "";
-            document.getElementById("grade-level").value = "";
-            document.getElementById("address").value = "";
-            document.getElementById("contact-number").value = "";
-            document.getElementById("username").value = "";
-
-            // Close the modal
-            $('#CreateStudent').modal('hide');
-        }
-
-        // Event listener for the delete and update buttons
-        $(document).on('click', '.deleteBtn, .updateBtn', function () {
-            const studentRow = $(this).closest('tr');
-            const studentNumber = studentRow.find('.studentNumber').text();
-            const studentName = studentRow.find('td:nth-child(2)').text();
-            const studentEmail = studentRow.find('td:nth-child(3)').text();
-            const studentId = studentRow.find('.studentId').val();
-
-            console.log('Student Number:', studentNumber);
-            console.log('Student Name:', studentName);
-            console.log('Student Email:', studentEmail);
-            console.log('Student ID:', studentId);
+              fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateStudent)
+            })
+              .then(function(response) {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Request failed with status:', response.status);
+                }
+              })
+              .then(function(data) {
+                // Handle the response here
+                console.log(data);
+                GetUserTable();
+              })
+              .catch(function(error) {
+                alert(error);
+              });
+          }
         });
-    </script>
+    }
+
+    function DeleteStudent(userID){
+  
+          var deleteStudent = {
+            UserID : parseInt(userID)
+          };
+
+          var url = endpoint + "/deleteStudent"
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deleteStudent)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetUserTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+    }
+
+    function UpdateStudent(studentNumber , userid, fname, lname,mname,email,dob,gradelvl,address,contactnum){
+
+      console.log(userid);
+      // Update the modal title
+      $('#CreateStudentLabel').text('UPDATE STUDENT');
+      
+      // Update the button text
+      // Get the button element by its ID
+      var addButton = document.getElementById('addStudent');
+
+      // Update the text of the button
+      addButton.textContent = 'Update Student';
+      
+      // Add custom logic here to populate the modal form fields with existing data based on the student ID
+      
+      // Show the modal
+      $('#CreateStudent').modal('show');
+
+      var parts = dob.split("/"); // Split the date string into an array [month, day, year]
+      var formattedDate = new Date(parts[2], parts[0] - 1, parts[1]).toLocaleDateString('en-CA');
+
+      console.log(formattedDate); // Output: "1997-10-09"
+
+      document.getElementById("student-number").value = studentNumber;
+      document.getElementById("first-name").value = fname;
+      document.getElementById("last-name").value = lname;
+      document.getElementById("middle-name").value = mname;
+      document.getElementById("email").value = email;
+      document.getElementById("dob").value = formattedDate;
+      document.getElementById("grade-level").value = gradelvl;
+      document.getElementById("address").value = address;
+      document.getElementById("contact-number").value = contactnum;
+      document.getElementById("modaluserIDforUpdate").value = userid;
+    }
+  </script>
+
 </body>
 </html>

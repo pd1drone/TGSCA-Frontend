@@ -160,7 +160,7 @@
 				<div class="modal-body">
 					<form id="uploadform" enctype="multipart/form-data" action="" method="post">
 						<div class="form-group">
-							<input type="hidden" name="UserID" value="8" />
+							<input id="modalUserID" type="hidden" name="UserID" value="" />
 							<label for="requirement-type" class="col-form-label">Requirement Type:</label>
 							<select class="form-control" name="requirementType" id="requirement-type">
 								<option>Form 137</option>
@@ -224,50 +224,122 @@
 	<script src="/js/api.js"></script>
 	<script>
 		
+		
 	document.addEventListener("DOMContentLoaded", () => {
+		document.getElementById("modalUserID").value = sessionStorage.getItem("UserID");
 		var form = document.getElementById('uploadform');
 		form.action = endpoint + '/upload';
+		GetRequirementsTable();
+
 	});
-	</script>
-    <script>
-		// Example of dynamically generating enrollee rows
-		var enrollees = [
-			{
-				requirementType: 'Document',
-				uploadedFile: '<a href="path/to/file1.pdf">File 1</a>',
-				actions: ''
-			},
-			{
-				requirementType: 'Certificate',
-				uploadedFile: '<a href="path/to/file2.pdf">File 2</a>',
-				actions: "",
-			},
-			// Add more enrollees as needed
-		];
+   
+	function GetRequirementsTable() {
+	var url = endpoint + "/readRequirements"
 
-		// Function to generate the enrollee rows dynamically
-		function generateEnrolleeRows() {
-			var rows = '';
-			enrollees.forEach(function(enrollee) {
-				rows += '<tr>';
-				rows += '<td>' + enrollee.requirementType + '</td>';
-				rows += '<td>' + enrollee.uploadedFile + '</td>';
-				rows += '<td> <button class="btn btn-danger deleteBtn">Delete Requirement</button></td>';
-				rows += '</tr>';
-			});
-			$('#uploadRequirementTableBody').html(rows);
+	;
+
+	var readRequirements = {
+		UserID: parseInt(sessionStorage.getItem("UserID"))
+	};
+
+
+	fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(readRequirements)
+		})
+		.then(function(response) {
+		if (response.ok) {
+			return response.json();
+		} else {
+			throw new Error('Request failed with status:', response.status);
 		}
-
-		// Generate the enrollee rows
-		generateEnrolleeRows();
-
-		// Initialize DataTables with options
-		$('#uploadRequirementTable').DataTable({
-			scrollY: '400px',
-			scrollCollapse: true,
-			lengthMenu: [10, 20, 50, 100],
-			pageLength: 10
+		})
+		.then(function(data) {
+		console.log(data);
+		let rows = '';
+		data.forEach(function(data) {
+			rows += `
+			<tr>
+				<td>${data.RequirementType}</td>
+				<td>${data.UploadedFile}</td>
+				<td>
+				<button class="btn btn-danger deleteBtn">Delete Requirement</button>
+				</td>
+			</tr>
+			`;
 		});
+
+		// Update the table body with new rows
+		$('#uploadRequirementTableBody').html(rows);
+
+		// Destroy the existing DataTable instance
+		var table = $('#uploadRequirementTable').DataTable();
+		table.destroy();
+
+		// Draw the DataTable with the updated data
+		$('#uploadRequirementTable').DataTable({
+			scrollY: '300px',
+			scrollCollapse: true,
+			lengthMenu: [5, 10, 25, 50],
+			pageLength: 10,
+			data: data,
+			columns: [
+				{data: 'RequirementType'},
+				{data: null, render: function(data,type,row){
+					var reqType = row.UploadedFile;
+					var filename = reqType.split("/");
+					
+					return `<a href="${row.UploadedFile}">${filename[filename.length - 1]}</a>`;
+				}},
+				{ data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.ID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.ID}" onclick="DeleteRequirements(${row.ID},'${row.UploadedFile}')">Delete Requirement</button>`;
+                }
+              } 
+			]
+		});
+		})
+		.catch(function(error) {
+		console.error('Error:', error);
+		});
+	}
+
+	function DeleteRequirements(ID, uploadedfile){
+
+		var deletereq = {
+			ID : parseInt(ID),
+			UploadedFile: uploadedfile
+		};
+
+		var url = endpoint + "/deleteRequirements"
+
+		fetch(url, {
+			method: 'DELETE',
+			headers: {
+			'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(deletereq)
+		})
+			.then(function(response) {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw new Error('Request failed with status:', response.status);
+			}
+			})
+			.then(function(data) {
+			// Handle the response here
+			console.log(data);
+			GetRequirementsTable();
+			})
+			.catch(function(error) {
+			alert(error);
+			});
+	}
     </script>
 </body>
 </html>

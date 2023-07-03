@@ -173,77 +173,85 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating rows
-        data = [
-            { studentNumber: '2021001', uploadedFile: '<a href="path/to/file1.pdf">File 1</a>', requirementType: 'Type 1' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            { studentNumber: '2021002', uploadedFile: '<a href="path/to/file2.pdf">File 2</a>', requirementType: 'Type 2' },
-            // Add more data objects as needed
-        ];
+    <script src="/js/api.js"></script>
+	<script>
+		
+	document.addEventListener("DOMContentLoaded", () => {
+		
+		GetRequirementsTable();
 
-        // Function to generate the rows dynamically
-        function generateRequirementRows() {
-            let rows = '';
-            data.forEach((requirement) => {
-                rows += `
-                    <tr>
-                        <td>${requirement.studentNumber}</td>
-                        <td>${requirement.uploadedFile}</td>
-                        <td>${requirement.requirementType}</td>
-                    </tr>
-                `;
-            });
-            $('#requirementTableBody').html(rows);
-        }
+	});
+   
+	function GetRequirementsTable() {
+	var url = endpoint + "/readRequirements"
 
-        // Generate the requirement rows
-        generateRequirementRows();
+	;
 
-        // Initialize DataTables with options
-        $('#requirementTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
-        });
+	var readRequirements = {
+		UserID: 0
+	};
+
+
+	fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(readRequirements)
+		})
+		.then(function(response) {
+		if (response.ok) {
+			return response.json();
+		} else {
+			throw new Error('Request failed with status:', response.status);
+		}
+		})
+		.then(function(data) {
+		console.log(data);
+		let rows = '';
+		data.forEach(function(data) {
+            var reqType = data.UploadedFile;
+            var filename = reqType.split("/");
+			rows += `
+			<tr>
+				<td>${data.StudentNumber}</td>
+				<td><a href="${data.UploadedFile}">${filename[filename.length - 1]}</a></td>
+				<td>${data.RequirementType}</td>
+			</tr>
+			`;
+		});
+
+		// Update the table body with new rows
+		$('#requirementTableBody').html(rows);
+
+		// Destroy the existing DataTable instance
+		var table = $('#requirementTable').DataTable();
+		table.destroy();
+
+		// Draw the DataTable with the updated data
+		$('#uploadRequirementTable').DataTable({
+			scrollY: '300px',
+			scrollCollapse: true,
+			lengthMenu: [5, 10, 25, 50],
+			pageLength: 10,
+			data: data,
+			columns: [
+                {data: 'StudentNumber'},
+				{data: null, render: function(data,type,row){
+					var reqType = row.UploadedFile;
+					var filename = reqType.split("/");
+					return `<a href="${row.UploadedFile}">${filename[filename.length - 1]}</a>`;
+				}},
+				{data: 'RequirementType'}
+			]
+		});
+		})
+		.catch(function(error) {
+		console.error('Error:', error);
+		});
+	}
     </script>
 </body>
 </html>

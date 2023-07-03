@@ -120,6 +120,7 @@
               console.log(data);
               if (data.Authenticated){
                 sessionStorage.setItem("UserType", data.UserType);
+                sessionStorage.setItem("UserID", data.UserID);
                 window.location.href = "/student";
                 
               }else{
