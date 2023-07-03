@@ -165,7 +165,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="addTeacher()">Add Teacher</button>
+                    <button type="button" id="addTeacher" data-dismiss="modal" class="btn btn-primary">Add Teacher</button>
                 </div>
             </div>
         </div>
@@ -178,7 +178,7 @@
         <div class="container">
             <div class="row">
                 <div class="text-center">
-                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateTeacher">Add Teacher</button>
+                    <button id="addupdatestd" type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateTeacher">Add Teacher</button>
                 </div>
             </div>
         </div>
@@ -201,49 +201,222 @@
     <script src="/js/logout.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating teacher data
-        var teachers = [
-            {
-                teacherName: "John Doe"
-            },
-            {
-                teacherName: "Jane Smith"
-            }
-            // Add more teacher objects as needed
-        ];
+    <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        GetTeacherTable();
+        CreateTeacher();
+        document.getElementById("addupdatestd").addEventListener("click", function(){
+          // Update the modal title
+          $('#CreateTeacherLabel').text('ADD TEACHER');
+          
+          // Update the button text
+          // Get the button element by its ID
+          var addButton = document.getElementById('addTeacher');
 
-        // Function to generate the teacher rows dynamically
-        function generateTeacherRows() {
-            var rows = '';
-            teachers.forEach(function (teacher) {
-                rows += '<tr>';
-                rows += '<td>' + teacher.teacherName + '</td>';
-                rows += '<td>' +
-                    '<button class="btn btn-danger deleteBtn">Delete</button>' +
-                    ' <button class="btn btn-primary updateBtn">Update</button>' +
-                    '</td>';
-                rows += '</tr>';
-            });
-            $('#teacherTableBody').html(rows);
-        }
-
-        // Generate the teacher rows
-        generateTeacherRows();
-
-        // Initialize DataTables with options
-        $('#teacherTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
+          // Update the text of the button
+          addButton.textContent = 'Add Teacher';
         });
-    </script>
+    });        
+
+    function GetTeacherTable() {
+      var url = endpoint + "/readTeacher"
+
+      var readteacher = {
+        StudentNumber: 0
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readteacher)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.TeacherName}</td>
+                <td>
+                  <button class="btn btn-danger deleteBtn">Delete Teacher</button>
+                  <button class="btn btn-primary updateBtn">Update Teacher</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#teacherTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#teacherTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#teacherTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'TeacherName' },
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.ID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.ID}" onclick="DeleteTeacher(${row.ID})">Delete Teacher</button>
+                        <button class="btn btn-primary updateBtn" data-userid="${row.ID}" onclick="UpdateTeacher('${row.ID}', '${row.TeacherName}')">Update Teacher</button>`;
+                }
+              } 
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
+    }
+
+
+    function CreateTeacher(){
+        var studentLogin = document.getElementById("addTeacher");
+        studentLogin.addEventListener("click",function(){
+         teachername = document.getElementById("teacher-name").value;
+
+          if (document.getElementById('addTeacher').textContent == "Add Teacher"){
+            
+            document.getElementById("teacher-name").value = "";
+              var createTeacher = {
+                TeacherName: teachername
+            };
+
+            console.log(createTeacher);
+            var url = endpoint + "/createTeacher"
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createTeacher)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetTeacherTable();
+              document.getElementById("teacher-name").value = "";
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+          } else{
+            var url = endpoint + "/updateTeacher"
+            var updateTeacher = {
+                TeacherName: document.getElementById("teacher-name").value,
+                ID: parseInt(document.getElementById("userIDforUpdate").value)
+            }
+
+            console.log(updateTeacher);
+
+              fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateTeacher)
+            })
+              .then(function(response) {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Request failed with status:', response.status);
+                }
+              })
+              .then(function(data) {
+                // Handle the response here
+                console.log(data);
+                GetTeacherTable();
+                document.getElementById("teacher-name").value = "";
+              })
+              .catch(function(error) {
+                alert(error);
+              });
+          }
+        });
+    }
+
+    function DeleteTeacher(userID){
+  
+          var deleteTeacher = {
+            ID : parseInt(userID)
+          };
+
+          var url = endpoint + "/deleteTeacher"
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deleteTeacher)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetTeacherTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+    }
+
+    function UpdateTeacher(userid,teachername){
+      $('#CreateTeacherLabel').text('UPDATE Teacher');
+      
+      // Update the button text
+      // Get the button element by its ID
+      var addButton = document.getElementById('addTeacher');
+
+      // Update the text of the button
+      addButton.textContent = 'Update Teacher';
+      
+      $('#CreateTeacher').modal('show');
+
+      document.getElementById("teacher-name").value = teachername;
+      document.getElementById("userIDforUpdate").value = userid;
+    }
+  </script>
+   
 </body>
 </html>

@@ -64,10 +64,6 @@
 
 				<html lang="en">
 <head>
-<script type="text/javascript" src="https://github.com/rubyeffect/easy_fill/tree/master/lib/easy_fill-0.0.1.min.js"></script>
-  <title>Reach Me</title>
-  <link rel="stylesheet" type="text/css" href="appointment.css" />
-</head>
 
 <body>
   <div id="container">
@@ -78,20 +74,20 @@
       <p>Make your appointment request easier</p>
 
     </div>
-    <form action="index.html" method="post">
+    <form>
       <fieldset>
         <legend><span class="number">1</span>Basic details</legend>
         <label for="name">Name:</label>
         <input type="text" id="name" name="user_name" placeholder="Last Name, First Name Middle Initial" >
 
         <label for="mail">Email:</label>
-        <input type="email" id="mail" name="user_email" placeholder="xxxxx@xxxx.com" required>
+        <input type="email" id="email" name="user_email" placeholder="xxxxx@xxxx.com" required>
 
         <label for="tel">Contact Number:</label>
-        <input type="tel" id="tel" placeholder="09xxxxxxxxx" name="user_num">
+        <input type="tel" id="contactnumber" placeholder="09xxxxxxxxx" name="user_num">
 
 		<label for="tel">Student Number:</label>
-        <input type="tel" id="tel" placeholder="" name="user_num">
+        <input type="tel" id="studentnumber" placeholder="" name="user_num">
 
       </fieldset>
 
@@ -108,18 +104,84 @@
         <label for="appointment_description">Appointment Description:</label>
         <textarea id="appointment_description" name="appointment_description" placeholder="I wish to get an appointment to (name of school staff/teacher) "></textarea>
         <label for="date">Date:</label>
-        <input type="date" name="date" value="" required></input>
+        <input type="date" id="dateappointment" name="date" value="" required></input>
         <br>
         <label for="time">Time:</label>
-        <input type="time" name="time" value="" required></input>
+        <input type="time" id="timeappointment" name="time" value="" required></input>
         <br>
 		<label for="appointment_description">Confirmation for your appointment schedule will be sent to your email</label>
       </fieldset>
-      <button type="submit">Request For Appointment</button>
+      <button id="requestAppointment" type="button">Request For Appointment</button>
     </form>
   </div>
 </body>
 
 <script src="js/enrollment.js"></script>
+<script src="js/api.js"></script>
+<script>
+
+  document.addEventListener("DOMContentLoaded", () => {
+	  var appointment = document.getElementById("requestAppointment");
+	  appointment.addEventListener("click",function(){
+
+		var name = document.getElementById("name").value;
+		var email = document.getElementById("email").value;
+		var contactnumber = document.getElementById("contactnumber").value;
+		var studentnumber = document.getElementById("studentnumber").value;
+		var appointment_for = document.getElementById("appointment_for").value;
+		var appointment_description = document.getElementById("appointment_description").value;
+		var dateappointment = document.getElementById("dateappointment").value;
+		var timeappointment = document.getElementById("timeappointment").value;
+
+
+		var dateObj = new Date(dateappointment);
+		var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+		var day = dateObj.getDate().toString().padStart(2, '0');
+		var year = dateObj.getFullYear().toString();
+
+		var formattedDateReq = month + '/' + day + '/' + year;
+		console.log(formattedDateReq);
+
+		var createAppointment = {
+			Name: name,
+			Email: email,
+			ContactNumber: contactnumber,
+			StudentNumber: parseInt(studentnumber),
+			AppointmentType: appointment_for,
+			AppointmentDescription: appointment_description,
+			AppointmentDate: formattedDateReq +" "+ timeappointment,
+		}
+		console.log(createAppointment);
+
+
+		var url = endpoint + "/createAppointment"
+
+		fetch(url, {
+		  method: 'POST',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify(createAppointment)
+		})
+		  .then(function(response) {
+			if (response.ok) {
+			  return response.json();
+			} else {
+			  throw new Error('Request failed with status:', response.status);
+			}
+		  })
+		  .then(function(data) {
+			// Handle the response here
+			console.log(data);
+			if (data.Successful){
+			  window.location.href = "/";
+			}
+		  })
+		  .catch(function(error) {
+			alert(error);
+		  });
+	  });
+  });
+</script>
 
 </html>
