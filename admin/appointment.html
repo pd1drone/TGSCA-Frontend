@@ -175,60 +175,86 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating appointment data
-        var appointments = [
-            {
-                name: "John Doe",
-                email: "johndoe@example.com",
-                contactNumber: "123-456-7890",
-                studentNumber: "12345",
-                appointmentType: "Advisory Session",
-                appointmentDescription: "Discuss course selection",
-                dateTime: "2023-06-30 10:00 AM"
-            },
-            {
-                name: "Jane Smith",
-                email: "janesmith@example.com",
-                contactNumber: "987-654-3210",
-                studentNumber: "54321",
-                appointmentType: "Career Counseling",
-                appointmentDescription: "Explore career options",
-                dateTime: "2023-07-05 2:30 PM"
-            }
-            // Add more appointment objects as needed
-        ];
+    <script src="/js/api.js"></script>
+	<script>
+		
+	document.addEventListener("DOMContentLoaded", () => {
+		
+		GetAppointmentTable();
 
-        // Function to generate the appointment rows dynamically
-        function generateAppointmentRows() {
-            var rows = '';
-            appointments.forEach(function (appointment) {
-                rows += '<tr>';
-                rows += '<td>' + appointment.name + '</td>';
-                rows += '<td>' + appointment.email + '</td>';
-                rows += '<td>' + appointment.contactNumber + '</td>';
-                rows += '<td>' + appointment.studentNumber + '</td>';
-                rows += '<td>' + appointment.appointmentType + '</td>';
-                rows += '<td>' + appointment.appointmentDescription + '</td>';
-                rows += '<td>' + appointment.dateTime + '</td>';
-                rows += '</tr>';
-            });
-            $('#appointmentTableBody').html(rows);
-        }
+	});
+   
+	function GetAppointmentTable() {
+	var url = endpoint + "/readAppointment"
 
-        // Generate the appointment rows
-        generateAppointmentRows();
+	;
 
-        // Initialize DataTables with options
-        $('#appointmentTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
-        });
+	var readAppointment = {
+	};
+
+
+	fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(readAppointment)
+		})
+		.then(function(response) {
+		if (response.ok) {
+			return response.json();
+		} else {
+			throw new Error('Request failed with status:', response.status);
+		}
+		})
+		.then(function(data) {
+		console.log(data);
+		let rows = '';
+		data.forEach(function(data) {
+			rows += `
+			<tr>
+				<td>${data.Name}</td>
+				<td>${data.Email}</td>
+				<td>${data.StudentNumber}</td>
+				<td>${data.ContactNumber}</td>
+				<td>${data.AppointmentType}</td>
+				<td>${data.AppointmentDescription}</td>
+				<td>${data.AppointmentDate}</td>
+			</tr>
+			`;
+		});
+
+		// Update the table body with new rows
+		$('#appointmentTableBody').html(rows);
+
+		// Destroy the existing DataTable instance
+		var table = $('#appointmentTable').DataTable();
+		table.destroy();
+
+		// Draw the DataTable with the updated data
+		$('#appointmentTable').DataTable({
+			scrollY: '300px',
+			scrollCollapse: true,
+			lengthMenu: [5, 10, 25, 50],
+			pageLength: 10,
+			data: data,
+			columns: [
+                {data: 'Name'},
+                {data: 'Email'},
+                {data: 'StudentNumber'},
+                {data: 'ContactNumber'},
+                {data: 'AppointmentType'},
+                {data: 'AppointmentDescription'},
+                {data: 'AppointmentDate'},
+			]
+		});
+		})
+		.catch(function(error) {
+		console.error('Error:', error);
+		});
+	}
     </script>
 </body>
 </html>

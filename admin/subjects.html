@@ -196,18 +196,18 @@
                             <label for="schedule-end-time" class="col-form-label">End Time:</label>
                             <input type="time" class="form-control" id="schedule-end-time">
                         </div>
+                        <input type="hidden" id="modaluserIDforUpdate" value="0">
+                        <input type="hidden" id="teacherid" value="0">
                         <div class="form-group">
                             <label for="teacher" class="col-form-label">Teacher:</label>
-                            <select class="form-control" id="teacher">
-                                <option>John Doe</option>
-                                <option>Jane Smith</option>
+                            <select class="form-control" id="teacher" >
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+                    <button type="button" onclick="EmptyFields()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="addSubject" type="button" data-dismiss="modal" class="btn btn-primary">Add Subject</button>
                 </div>
             </div>
         </div>
@@ -220,7 +220,7 @@
         <div class="container">
             <div class="row">
                 <div class="text-center">
-                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#CreateSubject">Add Subject</button>
+                    <button id="addupdatestd" type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal"  onclick="populateOptions()" data-target="#CreateSubject">Add Subject</button>
                 </div>
             </div>
         </div>
@@ -246,50 +246,310 @@
     <script src="/js/logout.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating rows
-        var subjects = [
-            { subject: 'Mathematics', gradeLevel: 'Grade 5', schedule: 'Monday 8:00AM - 9:00AM', teacher: 'John Doe' },
-            { subject: 'Science', gradeLevel: 'Grade 6', schedule: 'Tuesday 9:00AM - 10:00AM', teacher: 'Jane Smith' },
-            { subject: 'English', gradeLevel: 'Grade 5', schedule: 'Monday 10:00AM - 11:00AM', teacher: 'John Doe' },
-            { subject: 'History', gradeLevel: 'Grade 7', schedule: 'Thursday 11:00AM - 12:00PM', teacher: 'Jane Smith' },
-            // Add more subjects as needed
-        ];
+    <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        GetSubjectTable();
+        CreateSubject();
+        document.getElementById("addupdatestd").addEventListener("click", function(){
+          // Update the modal title
+          $('#CreateSubjectLabel').text('ADD SUBJECT');
+          
+          // Update the button text
+          // Get the button element by its ID
+          var addButton = document.getElementById('addSubject');
 
-        // Function to generate the rows dynamically
-        function generateSubjectRows() {
-            var rows = '';
-            subjects.forEach(function(subject) {
-                rows += '<tr>';
-                rows += '<td>' + subject.subject + '</td>';
-                rows += '<td>' + subject.gradeLevel + '</td>';
-                rows += '<td>' + subject.schedule + '</td>';
-                rows += '<td>' + subject.teacher + '</td>';
-                rows += '<td>';
-                rows += '<button class="btn btn-danger deleteBtn">Delete Subject</button>';
-                rows += ' <button class="btn btn-primary updateBtn">Update Subject</button>';
-                rows += '</td>';
-                rows += '</tr>';
-            });
-            $('#subjectTableBody').html(rows);
-        }
-
-        // Generate the subject rows
-        generateSubjectRows();
-
-        // Initialize DataTables with options
-        $('#subjectTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
+          // Update the text of the button
+          addButton.textContent = 'Add Subject';
         });
-    </script>
+    });        
+
+    function GetSubjectTable() {
+      var url = endpoint + "/readSubject"
+
+      var readteacher = {
+        StudentNumber: 0
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readteacher)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.Subject}</td>
+                <td class="studentNumber">${data.GradeLevel}</td>
+                <td class="studentNumber">${data.Schedule}</td>
+                <td class="studentNumber">${data.TeacherName}</td>
+                <td>
+                  <button class="btn btn-danger deleteBtn">Delete Teacher</button>
+                  <button class="btn btn-primary updateBtn">Update Teacher</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#subjectTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#subjectTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#subjectTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'Subject' },
+              { data: 'GradeLevel' },
+              { data: 'Schedule' },
+              { data: 'TeacherName' },
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.ID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.ID}" onclick="DeleteSubject(${row.ID})">Delete Subject</button>
+                        <button class="btn btn-primary updateBtn" data-userid="${row.ID}" onclick="UpdateSubject('${row.ID}', '${row.Subject}','${row.GradeLevel}','${row.Schedule}','${row.TeachersID}')">Update Subject</button>`;
+                }
+              } 
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
+    }
+
+
+    function CreateSubject(){
+        var addSubject = document.getElementById("addSubject");
+        addSubject.addEventListener("click",function(){
+         subject = document.getElementById("subject").value;
+         gradelevel = document.getElementById("grade-level").value;
+         scheduleday = document.getElementById("schedule-day").value;
+         schedStart = document.getElementById("schedule-start-time").value;
+         schedEnd = document.getElementById("schedule-end-time").value;
+         teacherID = document.getElementById("teacher").value;
+
+          if (document.getElementById('addSubject').textContent == "Add Subject"){
+            
+              var createSubject = {
+                Subject: subject,
+                GradeLevel: gradelevel,
+                Schedule: scheduleday + " " + schedStart + " - " + schedEnd,
+                TeachersID: parseInt(teacherID)
+            };
+
+            console.log(createSubject);
+            var url = endpoint + "/createSubject"
+
+
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetSubjectTable();
+              EmptyFields();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+          } else{
+
+            subject = document.getElementById("subject").value;
+            gradelevel = document.getElementById("grade-level").value;
+            scheduleday = document.getElementById("schedule-day").value;
+            schedStart = document.getElementById("schedule-start-time").value;
+            schedEnd = document.getElementById("schedule-end-time").value;
+            teacherID = document.getElementById("teacher").value;
+            var url = endpoint + "/updateSubject"
+            console.log(document.getElementById("modaluserIDforUpdate").value);
+            var updateSubject = {
+                ID: parseInt(document.getElementById("modaluserIDforUpdate").value),
+                Subject: subject,
+                GradeLevel: gradelevel,
+                Schedule: scheduleday + " " + schedStart + " - " + schedEnd,
+                TeachersID: parseInt(teacherID)
+            };
+
+            console.log(updateSubject);
+
+              fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateSubject)
+            })
+              .then(function(response) {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Request failed with status:', response.status);
+                }
+              })
+              .then(function(data) {
+                // Handle the response here
+                console.log(data);
+                GetSubjectTable();
+                EmptyFields();
+              })
+              .catch(function(error) {
+                alert(error);
+              });
+          }
+        });
+    }
+
+    function DeleteSubject(userID){
+  
+          var deleteSubject = {
+            ID : parseInt(userID)
+          };
+
+          var url = endpoint + "/deleteSubject"
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deleteSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetSubjectTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+    }
+
+    function UpdateSubject(id,subject,gradelvl,schedule,teacherid){
+      populateOptions();
+      $('#CreateSubjectLabel').text('UPDATE SUBJECT');
+      
+      // Update the button text
+      // Get the button element by its ID
+      var addButton = document.getElementById('addSubject');
+
+      // Update the text of the button
+      addButton.textContent = 'Update Subject';
+      
+      $('#CreateSubject').modal('show');
+      
+        var splitString = schedule.split(" - ");
+        var splittedString = splitString[0].split(" ");
+
+      // Extract the day, start time, and end time
+        var  day = splittedString[0]; // Monday
+        var  startTime = splittedString[1].trim(); // 10:00
+        var  endTime = splitString[1].trim(); // 11:00
+
+        console.log("Day:", day); // Output: Day: Monday
+        console.log("Start Time:", startTime); // Output: Start Time: 10:00
+        console.log("End Time:", endTime); // Output: End Time: 11:00
+
+        document.getElementById("subject").value = subject;
+        document.getElementById("grade-level").value = gradelvl;
+        document.getElementById("modaluserIDforUpdate").value = id;
+        document.getElementById("schedule-day").value=day;
+        document.getElementById("schedule-start-time").value = startTime;
+        document.getElementById("schedule-end-time").value = endTime;
+        document.getElementById("teacherid").value = teacherid;
+        console.log(teacherid.toString());
+        console.log(document.getElementById("teacherid").value);
+    }
+
+    function populateOptions() {
+
+        var getTeacher= {}
+        var url = endpoint + "/readTeacher"
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(getTeacher)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById("teacher");
+                
+                // Clear existing options
+                selectElement.innerHTML = "";
+
+                // Create new options using the API response data
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.ID;
+                    option.textContent = item.TeacherName;
+                    selectElement.appendChild(option);
+                    document.getElementById("teacher").value = document.getElementById("teacherid").value
+                    console.log(document.getElementById("teacherid").value);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function EmptyFields(){
+        document.getElementById("subject").value = "";
+                document.getElementById("grade-level").value= "";
+                document.getElementById("schedule-day").value= "";
+                document.getElementById("schedule-start-time").value= "";
+                document.getElementById("schedule-end-time").value= "";
+                document.getElementById("teacher").value= "";
+    }
+  </script>
+
 </body>
 </html>
