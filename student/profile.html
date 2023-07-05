@@ -136,29 +136,29 @@
                     <form>
                         <div class="form-group">
                             <label for="name" class="col-form-label">Name:</label>
-                            <input type="text" class="form-control" id="name">
+                            <input type="text" class="form-control" id="namemodal">
                         </div>
                         <div class="form-group">
                             <label for="email" class="col-form-label">Email:</label>
-                            <input type="email" class="form-control" id="email">
+                            <input type="email" class="form-control" id="emailmodal">
                         </div>
                         <div class="form-group">
                             <label for="dob" class="col-form-label">Date of Birth:</label>
-                            <input type="date" class="form-control" id="dob">
+                            <input type="date" class="form-control" id="dobmodal">
                         </div>
                         <div class="form-group">
                             <label for="address" class="col-form-label">Address:</label>
-                            <input type="text" class="form-control" id="address">
+                            <input type="text" class="form-control" id="addressmodal">
                         </div>
                         <div class="form-group">
                             <label for="contact-number" class="col-form-label">Contact Number:</label>
-                            <input type="tel" class="form-control" id="contact-number" pattern="09[0-9]{9}">
+                            <input type="tel" class="form-control" id="contact-numbermodal" pattern="09[0-9]{9}">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="updateStudent()">Add Student</button>
                 </div>
             </div>
         </div>
@@ -170,7 +170,123 @@
 <script src="/js/bootstrap.min.js"></script>
 <script src="/js/plugins.js"></script>
 <script src="/js/smoothscroll.js"></script>
-<script src="/js/custom.js"></script>
+<script src="/js/api.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+      GetUserTable();
+      document.getElementById("updateProfileBtn").addEventListener("click", function(){
+        var dob = document.getElementById("dob").textContent;
+        var parts = dob.split("/"); // Split the date string into an array [month, day, year]
+        var formattedDate = new Date(parts[2], parts[0] - 1, parts[1]).toLocaleDateString('en-CA');
+
+        console.log(formattedDate); // Output: "1997-10-09"
+
+        document.getElementById("namemodal").value = document.getElementById("name").textContent;
+        document.getElementById("emailmodal").value = document.getElementById("email").textContent;
+        document.getElementById("dobmodal").value = formattedDate;
+        document.getElementById("addressmodal").value = document.getElementById("address").textContent;
+        document.getElementById("contact-numbermodal").value = document.getElementById("contact-number").textContent;
+      });
+  });        
+
+  function GetUserTable() {
+    var url = endpoint + "/readStudent"
+
+    var readStudent = {
+        UserID : parseInt(sessionStorage.getItem("UserID"))
+    };
+
+    console.log(readStudent);
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(readStudent)
+      })
+      .then(function(response) {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Request failed with status:', response.status);
+        }
+      })
+      .then(function(data) {
+        console.log(data);
+        
+        document.getElementById("student-number").textContent = data.StudentNumber;
+        document.getElementById("name").textContent = data.Name;
+        document.getElementById("email").textContent = data.Email;
+        document.getElementById("dob").textContent = data.DateOfBirth;
+        document.getElementById("grade-level").textContent = data.GradeLevel;
+        document.getElementById("address").textContent = data.Address;
+        document.getElementById("contact-number").textContent = data.ContactNumber;
+        document.getElementById("username").textContent = data.StudentNumber;
+
+      })
+      .catch(function(error) {
+        alert(error);
+      });
+  }
+
+  function updateStudent(){
+    var url = endpoint + "/updateStudent"
+
+var dateObj = new Date(document.getElementById("dob").value);
+var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
+var day = dateObj.getDate().toString().padStart(2, '0');
+var year = dateObj.getFullYear().toString();
+
+var formattedDateReq = month + '/' + day + '/' + year;
+console.log(formattedDateReq);
+
+console.log(parseInt(document.getElementById("userIDforUpdate").value))
+
+var updateStudent = {
+  StudentNumber: parseInt(document.getElementById("student-number").textContent),
+  UserID: parseInt(sessionStorage.getItem("UserID")),
+  FirstName: document.getElementById("first-name").value,
+  MiddleName: document.getElementById("middle-name").value,
+  LastName: document.getElementById("last-name").value,
+  Email: document.getElementById("email").value,
+  DateOfBirth: formattedDateReq,
+  GradeLevel: document.getElementById("grade-level").value,
+  Address: document.getElementById("address").value = address,
+  ContactNumber: document.getElementById("contact-number").value
+}
+document.getElementById("namemodal").value = document.getElementById("name").textContent;
+        document.getElementById("emailmodal").value = document.getElementById("email").textContent;
+        document.getElementById("dobmodal").value = formattedDate;
+        document.getElementById("addressmodal").value = document.getElementById("address").textContent;
+        document.getElementById("contact-numbermodal").value 
+
+    console.log(updateStudent);
+
+    fetch(url, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updateStudent)
+    })
+    .then(function(response) {
+        if (response.ok) {
+        return response.json();
+        } else {
+        throw new Error('Request failed with status:', response.status);
+        }
+    })
+    .then(function(data) {
+        // Handle the response here
+        console.log(data);
+        GetUserTable();
+    })
+    .catch(function(error) {
+        alert(error);
+    });
+  }
+</script>
 
 </body>
 </html>
