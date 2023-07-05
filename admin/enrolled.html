@@ -158,26 +158,23 @@
                 <div class="modal-body">
                     <form>
                         <div class="form-group">
+                            <input type="hidden" id="hidden-student-number" value="0">
                             <label for="student-number" class="col-form-label">Student Number:</label>
                             <select class="form-control" id="student-number">
-                                <option>12345</option>
-                                <option>67890</option>
-                                <!-- Add more student numbers as needed -->
                             </select>
                         </div>
                         <div class="form-group">
+                            <input type="hidden" id="modaluserIDforUpdate" value="0">
+                            <input type="hidden" id="hidden-subject" value="0">
                             <label for="subject" class="col-form-label">Subject:</label>
                             <select class="form-control" id="subject">
-                                <option>English</option>
-                                <option>Math</option>
-                                <!-- Options for subjects -->
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="addEnrollee()">Add Enrollee</button>
+                    <button id="addEnrolled" type="button" data-dismiss="modal" class="btn btn-primary">Add Enrollee</button>
                 </div>
             </div>
         </div>
@@ -190,7 +187,7 @@
         <div class="container">
             <div class="row">
                 <div class="text-center">
-                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#createEnrollee">Add Enrollee</button>
+                    <button type="button" id="addupdatestd" class="btn btn-success btn-lg btn-block" onclick="populateOptions()" data-toggle="modal" data-target="#createEnrollee">Add Enrollee</button>
                 </div>
             </div>
         </div>
@@ -218,133 +215,331 @@
     <script src="/js/logout.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating enrollee rows
-        var enrollees = [
-            {
-                studentNumber: '12345',
-                studentName: 'John Doe',
-                gradeLevel: 'Grade 10',
-                subject: 'Mathematics',
-                schedule: 'Monday 8:00AM - 9:00AM',
-                teacher: 'John Doe'
-            },
-            {
-                studentNumber: '67890',
-                studentName: 'Jane Smith',
-                gradeLevel: 'Grade 9',
-                subject: 'Science',
-                schedule: 'Tuesday 10:00AM - 11:00AM',
-                teacher: 'Jane Smith'
-            },
-            // Add more enrollees as needed
-        ];
-
-        // Function to generate the enrollee rows dynamically
-        function generateEnrolleeRows() {
-            var rows = '';
-            enrollees.forEach(function(enrollee) {
-                rows += '<tr>';
-                rows += '<td>' + enrollee.studentNumber + '</td>';
-                rows += '<td>' + enrollee.studentName + '</td>';
-                rows += '<td>' + enrollee.gradeLevel + '</td>';
-                rows += '<td>' + enrollee.subject + '</td>';
-                rows += '<td>' + enrollee.schedule + '</td>';
-                rows += '<td>' + enrollee.teacher + '</td>';
-                rows += '<td>';
-                rows += '<button class="btn btn-danger deleteBtn">Delete Enrollee</button>';
-                rows += ' <button class="btn btn-primary updateBtn">Update Enrollee</button>';
-                rows += '</td>';
-                rows += '</tr>';
-            });
-            $('#enrolleeTableBody').html(rows);
-        }
-
-        // Generate the enrollee rows
-        generateEnrolleeRows();
-
-        // Initialize DataTables with options
-        $('#enrolleeTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
-        });
-    </script>
-  <script src="js/api.js"></script>
-  <script src="js/md5.js"></script>
+    <script src="/js/api.js"></script>
   <script>
-
     document.addEventListener("DOMContentLoaded", () => {
-        var studentLogin = document.getElementById("loginStudent");
-        studentLogin.addEventListener("click",function(){
 
-          var User = document.getElementById("studentnumber").value;
-          var Pass = document.getElementById("password").value;
-          var dob = document.getElementById("dob").value;
+    
+        document.getElementById("student-number").addEventListener("change", function() {
+        var selectedOption = document.getElementById("student-number").options[document.getElementById("student-number").selectedIndex];
+        var gradeLevel = selectedOption.getAttribute("gradelevel");
+        
+        // Populate the subject dropdown based on the selected student number
+        populateSubjects(gradeLevel);
+        });
 
-          console.log(User);
-          console.log(Pass);
-          console.log(dob);
-
-          var hash = md5(Pass);
-		      console.log(hash);
-
+        GetEnrolledTable();
+        CreateEnrolled();
+        document.getElementById("addupdatestd").addEventListener("click", function(){
+          // Update the modal title
+          $('#CreateEnrolleeLabel').text('ADD ENROLLED');
           
-          var dateObj = new Date(dob);
-          var month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 because months are zero-indexed
-          var day = dateObj.getDate().toString().padStart(2, '0');
-          var year = dateObj.getFullYear().toString();
+          // Update the button text
+          // Get the button element by its ID
+          var addButton = document.getElementById('addEnrolled');
 
-          var formattedDate = month + '/' + day + '/' + year;
-		      console.log(formattedDate);
+          // Update the text of the button
+          addButton.textContent = 'Add Enrolled';
+        });
+    });        
 
-          var login = {
-            studentNumber: User,
-            password: hash,
-            dateOfBirth: formattedDate
+    function GetEnrolledTable() {
+      var url = endpoint + "/readEnrolled"
+
+      var readenrolled = {
+        StudentNumber: 0
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readenrolled)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.StudentNumber}</td>
+                <td class="studentNumber">${data.StudentName}</td>
+                <td class="studentNumber">${data.GradeLevel}</td>
+                <td class="studentNumber">${data.Subject}</td>
+                <td class="studentNumber">${data.Schedule}</td>
+                <td class="studentNumber">${data.TeacherName}</td>
+                <td>
+                  <button class="btn btn-danger deleteBtn">Delete Enrolled</button>
+                  <button class="btn btn-primary updateBtn">Update Enrolled</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#enrolleeTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#enrolleeTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#enrolleeTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'StudentNumber' },
+              { data: 'StudentName' },
+              { data: 'GradeLevel' },
+              { data: 'Subject' },
+              { data: 'Schedule' },
+              { data: 'TeacherName' },
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.ID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.ID}" onclick="DeleteEnrolled(${row.ID})">Delete Enrolled</button>
+                        <button class="btn btn-primary updateBtn" data-userid="${row.ID}" onclick="UpdateEnrolled('${row.ID}', '${row.Subject}','${row.StudentNumber}','${row.SubjectID}')">Update Enrolled</button>`;
+                }
+              } 
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
+    }
+
+
+    function CreateEnrolled(){
+        var addSubject = document.getElementById("addEnrolled");
+        addSubject.addEventListener("click",function(){
+         subject = document.getElementById("subject").value;
+
+          if (document.getElementById('addEnrolled').textContent == "Add Enrolled"){
+            
+              var createSubject = {
+                SubjectID: parseInt(subject),
+                StudentNumber: parseInt(document.getElementById("student-number").value)
+            };
+
+            console.log(createSubject);
+            var url = endpoint + "/createEnrolled"
+
+
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetEnrolledTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+          } else{
+
+
+            subject = document.getElementById("subject").value;
+
+            var url = endpoint + "/updateEnrolled"
+            console.log(document.getElementById("modaluserIDforUpdate").value);
+            var updateSubject = {
+                ID: parseInt(document.getElementById("modaluserIDforUpdate").value),
+                SubjectID: parseInt(subject),
+                StudentNumber: parseInt(document.getElementById("student-number").value)
+            };
+
+            console.log(updateSubject);
+
+              fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateSubject)
+            })
+              .then(function(response) {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Request failed with status:', response.status);
+                }
+              })
+              .then(function(data) {
+                // Handle the response here
+                console.log(data);
+                GetEnrolledTable();
+              })
+              .catch(function(error) {
+                alert(error);
+              });
+          }
+        });
+    }
+
+    function DeleteEnrolled(userID){
+  
+          var deleteSubject = {
+            ID : parseInt(userID)
           };
 
-          var url = endpoint + "/loginStudent"
+          var url = endpoint + "/deleteEnrolled"
 
-        //   fetch(url, {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(login)
-        //   })
-        //     .then(function(response) {
-        //       if (response.ok) {
-        //         return response.json();
-        //       } else {
-        //         throw new Error('Request failed with status:', response.status);
-        //       }
-        //     })
-        //     .then(function(data) {
-        //       // Handle the response here
-        //       console.log(data);
-        //       if (data.Authenticated){
-        //         sessionStorage.setItem("UserType", data.UserType);
-        //         window.location.href = "/student";
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deleteSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetEnrolledTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+    }
+
+    function UpdateEnrolled(id,subject,studentnum,subjectID){
+      populateOptions();
+      $('#CreateEnrolleeLabel').text('UPDATE ENROLLED');
+      
+      // Update the button text
+      // Get the button element by its ID
+      var addButton = document.getElementById('addEnrolled');
+
+      // Update the text of the button
+      addButton.textContent = 'Update Enrolled';
+      
+      $('#createEnrollee').modal('show');
+    
+        document.getElementById("hidden-subject").value = subjectID;
+        document.getElementById("modaluserIDforUpdate").value = id;
+        document.getElementById("hidden-student-number").value=studentnum;
+
+        console.log(document.getElementById("hidden-subject").value);
+        console.log(document.getElementById("modaluserIDforUpdate").value);
+        console.log(document.getElementById("hidden-student-number").value);
+    
+        document.getElementById("subject").value = document.getElementById("hidden-subject").value;
+        document.getElementById("student-number").value = document.getElementById("hidden-student-number").value;
+    }
+
+    function populateOptions() {
+
+        var getTeacher= {}
+        var url = endpoint + "/readStudent"
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(getTeacher)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById("student-number");
                 
-        //       }else{
-        //         alert("Wrong Credentials!");
-        //         document.getElementById('loginform').reset();
-        //       }
-        //     })
-        //     .catch(function(error) {
-        //       alert(error);
-        //     });
-        });
-    });
+                // Clear existing options
+                selectElement.innerHTML = "";
+
+                // Create new options using the API response data
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.StudentNumber;
+                    option.textContent = item.StudentNumber;
+                    option.setAttribute("gradelevel", item.GradeLevel);
+                    selectElement.appendChild(option);
+                });
+                var selectedOption = document.getElementById("student-number").options[0];
+                var gradeLevel = selectedOption.getAttribute("gradelevel");
+                
+                // Populate the subject dropdown based on the selected student number
+                populateSubjects(gradeLevel);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+    }
+
+    function populateSubjects(gradeLevel){
+        var getSubject= {
+            GradeLevel: gradeLevel
+        }
+        var url = endpoint + "/readSubjectGradeLevel"
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(getSubject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById("subject");
+                
+                // Clear existing options
+                selectElement.innerHTML = "";
+
+                // Create new options using the API response data
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.ID;
+                    option.textContent = item.Subject;
+                    selectElement.appendChild(option);
+                });
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+    }
+
   </script>
+
 
 </body>
 </html>

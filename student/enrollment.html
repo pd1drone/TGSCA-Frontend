@@ -157,24 +157,19 @@
 						<div class="form-group">
 							<label for="subject" class="col-form-label">Subject:</label>
 							<select class="form-control" id="subject">
-								<option>English</option>
-								<option>Math</option>
-								<!-- Options for subjects -->
 							</select>
 						</div>
 						<div class="form-group">
+                            <input type="hidden" id="modaluserIDforUpdate" value="0">
 							<label for="schedule" class="col-form-label">Schedule:</label>
 							<select class="form-control" id="schedule">
-								<option>Monday 10:00AM - 11:00AM</option>
-								<option>Tuesday 9:00AM - 10:00AM</option>
-								<!-- Add more schedule options as needed -->
 							</select>
 						</div>
 					</form>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" onclick="addEnrollee()">Enroll Subject</button>
+					<button id="addEnrolled" data-dismiss="modal" type="button" class="btn btn-primary" onclick="addEnrollee()">Enroll Subject</button>
 				</div>
 			</div>
 		</div>
@@ -193,7 +188,7 @@
         <div class="container">
             <div class="row">
                 <div class="text-center">
-                    <button type="button" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#createEnrollee">Enroll Subject</button>
+                    <button id="addupdatestd" type="button" onclick="populateOptions()" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#createEnrollee">Enroll Subject</button>
                 </div>
             </div>
         </div>
@@ -218,56 +213,319 @@
     <script src="/js/logout.js"></script>
     <script src="/js/student.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating enrollee rows
-        var enrollees = [
-            {
-                subject: 'Mathematics',
-                schedule: 'Monday 8:00AM - 9:00AM',
-                teacher: 'John Doe'
-            },
-            {
-                subject: 'Science',
-                schedule: 'Tuesday 10:00AM - 11:00AM',
-                teacher: 'Jane Smith'
-            },
-            // Add more enrollees as needed
-        ];
+    <script src="/js/api.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-        // Function to generate the enrollee rows dynamically
-        function generateEnrolleeRows() {
-            var rows = '';
-            enrollees.forEach(function(enrollee) {
-                rows += '<tr>';
-                rows += '<td>' + enrollee.subject + '</td>';
-                rows += '<td>' + enrollee.schedule + '</td>';
-                rows += '<td>' + enrollee.teacher + '</td>';
-                rows += '<td>';
-                rows += '<button class="btn btn-danger deleteBtn">Delete Subject</button>';
-                rows += ' <button class="btn btn-primary updateBtn">Update Subject</button>';
-                rows += '</td>';
-                rows += '</tr>';
-            });
-            $('#enrolleeTableBody').html(rows);
-        }
-
-        // Generate the enrollee rows
-        generateEnrolleeRows();
-
-        // Initialize DataTables with options
-        $('#enrolleeTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
+    
+        document.getElementById("subject").addEventListener("change", function() {
+        
+        // Populate the subject dropdown based on the selected student number
+        populateSubjects(document.getElementById("subject").value);
         });
-    </script>
+
+        GetEnrolledTable();
+        CreateEnrolled();
+        document.getElementById("addupdatestd").addEventListener("click", function(){
+          // Update the modal title
+          $('#CreateEnrolleeLabel').text('ADD ENROLLED');
+          
+          // Update the button text
+          // Get the button element by its ID
+          var addButton = document.getElementById('addEnrolled');
+
+          // Update the text of the button
+          addButton.textContent = 'Add Enrolled';
+        });
+    });        
+
+    function GetEnrolledTable() {
+      var url = endpoint + "/readEnrolledStudent"
+
+      var readenrolled = {
+        UserID : parseInt(sessionStorage.getItem("UserID"))
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readenrolled)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.Subject}</td>
+                <td class="studentNumber">${data.Schedule}</td>
+                <td class="studentNumber">${data.TeacherName}</td>
+                <td>
+                  <button class="btn btn-danger deleteBtn">Delete Enrolled</button>
+                  <button class="btn btn-primary updateBtn">Update Enrolled</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#enrolleeTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#enrolleeTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#enrolleeTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'Subject' },
+              { data: 'Schedule' },
+              { data: 'TeacherName' },
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <input type="hidden" id="userIDforUpdate" value="${row.ID}">
+                  <button class="btn btn-danger deleteBtn" data-userid="${row.ID}" onclick="DeleteEnrolled(${row.ID})">Delete Enrolled</button>
+                        <button class="btn btn-primary updateBtn" data-userid="${row.ID}" onclick="UpdateEnrolled('${row.ID}', '${row.SubjectID}','${row.StudentNumber}')">Update Enrolled</button>`;
+                }
+              } 
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
+    }
+
+
+    function CreateEnrolled(){
+        var addSubject = document.getElementById("addEnrolled");
+        addSubject.addEventListener("click",function(){
+            schedule = document.getElementById("schedule").value;
+
+          if (document.getElementById('addEnrolled').textContent == "Add Enrolled"){
+            
+              var createSubject = {
+                SubjectID: parseInt(schedule),
+                StudentNumber: parseInt(sessionStorage.getItem("UserID"))
+            };
+
+            console.log(createSubject);
+            var url = endpoint + "/createEnrolledStudent"
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(createSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetEnrolledTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+          } else{
+
+
+            subject = document.getElementById("schedule").value;
+
+            var url = endpoint + "/updateEnrolledStudent"
+            console.log(document.getElementById("modaluserIDforUpdate").value);
+            var updateSubject = {
+                ID: parseInt(document.getElementById("modaluserIDforUpdate").value),
+                SubjectID: parseInt(subject),
+                StudentNumber: parseInt(sessionStorage.getItem("UserID"))
+            };
+
+            console.log(updateSubject);
+
+              fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateSubject)
+            })
+              .then(function(response) {
+                if (response.ok) {
+                  return response.json();
+                } else {
+                  throw new Error('Request failed with status:', response.status);
+                }
+              })
+              .then(function(data) {
+                // Handle the response here
+                console.log(data);
+                GetEnrolledTable();
+              })
+              .catch(function(error) {
+                alert(error);
+              });
+          }
+        });
+    }
+
+    function DeleteEnrolled(userID){
+  
+          var deleteSubject = {
+            ID : parseInt(userID)
+          };
+
+          var url = endpoint + "/deleteEnrolledStudent"
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deleteSubject)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetEnrolledTable();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+    }
+
+    function UpdateEnrolled(id,subjectID,studentnum){
+      populateOptions();
+      $('#CreateEnrolleeLabel').text('UPDATE ENROLLED');
+      
+      // Update the button text
+      // Get the button element by its ID
+      var addButton = document.getElementById('addEnrolled');
+
+      // Update the text of the button
+      addButton.textContent = 'Update Enrolled';
+      
+      $('#createEnrollee').modal('show');
+    
+        // document.getElementById("hidden-subject").value = subjectID;
+        document.getElementById("modaluserIDforUpdate").value = id;
+        // document.getElementById("hidden-student-number").value=studentnum;
+
+        // console.log(document.getElementById("hidden-subject").value);
+        // console.log(document.getElementById("modaluserIDforUpdate").value);
+        // console.log(document.getElementById("hidden-student-number").value);
+    
+        // document.getElementById("subject").value = document.getElementById("hidden-subject").value;
+        // document.getElementById("student-number").value = document.getElementById("hidden-student-number").value;
+    }
+
+    function populateOptions() {
+        var getSubject= {
+            UserID : parseInt(sessionStorage.getItem("UserID"))
+        }
+        var url = endpoint + "/readSubjectStudentDropdown"
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(getSubject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById("subject");
+                
+                // Clear existing options
+                selectElement.innerHTML = "";
+
+                // Create new options using the API response data
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.Subject;
+                    option.textContent = item.Subject;
+                    selectElement.appendChild(option);
+                });
+
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+
+    }
+
+    function populateSubjects(subject){
+        var getSubject= {
+            UserID: parseInt(sessionStorage.getItem("UserID")),
+            Subject: subject
+        }
+        var url = endpoint + "/readSubjectSchedule"
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(getSubject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const selectElement = document.getElementById("schedule");
+                
+                // Clear existing options
+                selectElement.innerHTML = "";
+
+                // Create new options using the API response data
+                data.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.ID;
+                    option.textContent = item.Schedule;
+                    selectElement.appendChild(option);
+                });
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+    }
+
+  </script>
 </body>
 </html>
 
