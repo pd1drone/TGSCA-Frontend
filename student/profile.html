@@ -21,6 +21,115 @@
 	<link href='//fonts.googleapis.com/css?family=Chewy' rel='stylesheet' type='text/css'>
 
   <title>Profile</title>
+  <style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    form input[type="text"],
+    form input[type="email"],
+    form button {
+        margin-bottom: 10px;
+    }
+
+    form button {
+        padding: 8px 16px;
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+    form button:hover {
+        background-color: #45a049;
+    }
+
+    .highlighted {
+        background-color: lightblue;
+    }
+
+    /* Additional CSS for DataTables */
+    div.dataTables_wrapper {
+        margin-bottom: 20px;
+    }
+
+    div.dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+
+    div.dataTables_wrapper .dataTables_filter {
+        float: right;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate {
+        text-align: center;
+        clear: both;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button {
+        display: inline-block;
+        padding: 5px 10px;
+        margin-left: 2px;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #eee;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+        color: #999;
+        cursor: default;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .ellipsis.disabled {
+        cursor: default;
+    }
+    #studentTable {
+      table-layout: fixed; /* Forces the table to have a fixed layout */
+      width: 100%; /* Sets the table width to 100% of its container */
+    }
+
+    #studentTable thead th {
+      white-space: nowrap; /* Prevents column text from wrapping */
+    }
+
+    #studentTable td,
+    #studentTable th {
+      vertical-align: middle; /* Aligns the content vertically in the cells */
+      text-align: center; /* Aligns the content horizontally in the cells */
+    }
+
+    .dataTables_scrollBody {
+      overflow-x: auto; /* Enables horizontal scrolling */
+      max-height: 300px; /* Limits the height of the scrollable area */
+    }
+
+    .dataTables_scrollBody thead th:last-child {
+      min-width: 100px; /* Adjusts the width of the last column to avoid misalignment */
+    }
+</style>
+
 </head>
 <body id="home" data-spy="scroll" data-target=".navbar-collapse">
 	<!-- start navigation -->
@@ -127,6 +236,30 @@
         </div>
     </div>
 
+    <br>
+
+    <div class="container">
+    <div class="col-md-6 col-md-offset-3"></div>
+    <h2>Enrolled Subjects</h2>
+    </div>
+
+    <div class="container">
+        <!-- Table to display enrollee data -->
+        <table id="enrolleeTable" class="display">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Schedule</th>
+                    <th>Teacher</th>
+                </tr>
+            </thead>
+            <tbody id="enrolleeTableBody">
+                <!-- Rows will be dynamically generated here -->
+            </tbody>
+        </table>
+    </div>
+    
+
     <!-- Modal -->
     <div class="modal fade" id="CreateStudent" tabindex="-1" role="dialog" aria-labelledby="CreateStudentLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -180,13 +313,16 @@
 <script src="/js/logout.js"></script>
 <script src="/js/student.js"></script>
 <script src="/js/jquery.js"></script>
-<script src="/js/bootstrap.min.js"></script>
 <script src="/js/plugins.js"></script>
 <script src="/js/smoothscroll.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
 <script src="/js/api.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
       GetUserTable();
+      GetEnrolledTable();
       document.getElementById("updateProfileBtn").addEventListener("click", function(){
         var dob = document.getElementById("dob").textContent;
         var parts = dob.split("/"); // Split the date string into an array [month, day, year]
@@ -298,6 +434,70 @@ var updateStudent = {
         alert(error);
     });
   }
+
+  function GetEnrolledTable() {
+      var url = endpoint + "/readEnrolledSubjects"
+
+      var readenrolled = {
+        UserID: parseInt(sessionStorage.getItem("UserID"))
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readenrolled)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td class="studentNumber">${data.Subject}</td>
+                <td class="studentNumber">${data.Schedule}</td>
+                <td class="studentNumber">${data.TeacherName}</td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#enrolleeTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#enrolleeTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#enrolleeTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'Subject' },
+              { data: 'Schedule' },
+              { data: 'TeacherName' }
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
+    }
+
+
 </script>
 
 </body>

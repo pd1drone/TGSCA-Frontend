@@ -176,79 +176,165 @@
     <script src="/js/logout.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
     <script src="/js/plugins.js"></script>
     <script src="/js/smoothscroll.js"></script>
-    <script src="/js/custom.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Example of dynamically generating enrolled student status rows
-        var enrolledStudents = [
-            {
-                studentNumber: '12345',
-                studentName: 'John Doe',
-                gradeLevel: 'Grade 10',
-                progressCard: '<a href="path/to/file2.pdf">File 2</a>',
-                progressCardStatus: 'Uploaded',
-                form137: '<a href="path/to/file2.pdf">File 2</a>',
-                form137Status: 'Uploaded',
-                goodMoralCertificate: '<a href="path/to/file2.pdf">File 2</a>',
-                goodMoralCertificateStatus: 'Uploaded',
-                registrationfee: '<a href="path/to/file2.pdf">File 2</a>',
-                registrationfeeStatus: 'Uploaded'
-            },
-            {
-                studentNumber: '67890',
-                studentName: 'Jane Smith',
-                gradeLevel: 'Grade 9',
-                progressCard: '<a href="path/to/file2.pdf">File 2</a>',
-                progressCardStatus: 'Uploaded',
-                form137: '<a href="path/to/file2.pdf">File 2</a>',
-                form137Status: 'Uploaded',
-                goodMoralCertificate: '<a href="path/to/file2.pdf">File 2</a>',
-                goodMoralCertificateStatus: 'Uploaded',
-                registrationfee: '<a href="path/to/file2.pdf">File 2</a>',
-                registrationfeeStatus: 'Uploaded'
-            },
-            // Add more enrolled students as needed
-        ];
+    <script src="/js/api.js"></script>
+  <script> 
+    document.addEventListener("DOMContentLoaded", () => {
+        GetEnrollmentStatus();
+    });        
 
-        // Function to generate the enrolled student status rows dynamically
-        function generateEnrolledStudentStatusRows() {
-            var rows = '';
-            enrolledStudents.forEach(function(student) {
-                rows += '<tr>';
-                rows += '<td>' + student.studentNumber + '</td>';
-                rows += '<td>' + student.studentName + '</td>';
-                rows += '<td>' + student.gradeLevel + '</td>';
-                rows += '<td>' + student.progressCard + '</td>';
-                rows += '<td>' + student.progressCardStatus + '</td>';
-                rows += '<td>' + student.form137 + '</td>';
-                rows += '<td>' + student.form137Status + '</td>';
-                rows += '<td>' + student.goodMoralCertificate + '</td>';
-                rows += '<td>' + student.goodMoralCertificateStatus + '</td>';
-                rows += '<td>' + student.registrationfee + '</td>';
-                rows += '<td>' + student.registrationfeeStatus + '</td>';
-                rows += '<td>';
-                rows += '<button class="btn btn-danger deleteBtn">Reject</button>';
-                rows += ' <button class="btn btn-primary updateBtn">Approve</button>';
-                rows += '</td>';
-                rows += '</tr>';
-            });
-            $('#enrolledStudentStatusTableBody').html(rows);
+    function GetEnrollmentStatus() {
+      var url = endpoint + "/getStudentEnrollmentStatus"
+
+      var readteacher = {
+        StudentNumber: 0
+      };
+
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(readteacher)
+        })
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Request failed with status:', response.status);
+          }
+        })
+        .then(function(data) {
+          // Handle the response here
+          let rows = '';
+          console.log(data);
+          data.forEach((data) => {
+            rows += `
+              <tr>
+                <td>${data.StudentNumber}</td>
+                <td>${data.StudentName}</td>
+                <td>${data.GradeLevel}</td>
+                <td>${data.ProgressCard}</td>
+                <td>${data.ProgressCardStatus}</td>
+                <td>${data.Form137}</td>
+                <td>${data.Form137Status}</td>
+                <td>${data.GoodMoral}</td>
+                <td>${data.GoodMoralStatus}</td>
+                <td>${data.RegFee}</td>
+                <td>${data.RegFeeStatus}</td>
+                <td>
+                  <button class="btn btn-primary updateBtn">Approve</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          // Update the table body with new rows
+          $('#enrolledStudentStatusTableBody').html(rows);
+
+          // Destroy the existing DataTable instance
+          var table = $('#enrolledStudentStatusTable').DataTable();
+          table.destroy();
+
+          // Draw the DataTable with the updated data
+          $('#enrolledStudentStatusTable').DataTable({
+            scrollY: '300px',
+            scrollCollapse: true,
+            lengthMenu: [5, 10, 25, 50],
+            pageLength: 10,
+            data: data,
+            columns: [
+              { data: 'StudentNumber' },
+              { data: 'StudentName' },
+              { data: 'GradeLevel' },
+              {data: null, render: function(data,type,row){
+					return `<a href="${row.ProgressCard}">Progress Card</a>`;
+				}},
+                {data: null, render: function(data,type,row){
+                    if (row.ProgressCardStatus == "Uploaded"){
+                        return `<span>&#9989;</span>`;
+                    }
+                    return  `<span>&#10060;</span>`;
+				}},
+              {data: null, render: function(data,type,row){
+					return `<a href="${row.Form137}">Form 137</a>`;
+				}},
+                {data: null, render: function(data,type,row){
+                    if (row.Form137Status == "Uploaded"){
+                        return `<span>&#9989;</span>`;
+                    }
+                    return  `<span>&#10060;</span>`;
+				}},
+              {data: null, render: function(data,type,row){
+					return `<a href="${row.GoodMoral}">Good Moral</a>`;
+				}},
+                {data: null, render: function(data,type,row){
+                    if (row.GoodMoralStatus == "Uploaded"){
+                        return `<span>&#9989;</span>`;
+                    }
+                    return  `<span>&#10060;</span>`;
+				}},
+              {data: null, render: function(data,type,row){
+					return `<a href="${row.RegFee}">Registration Fee</a>`;
+				}},
+                {data: null, render: function(data,type,row){
+                    if (row.RegFeeStatus == "Uploaded"){
+                        return `<span>&#9989;</span>`;
+                    }
+                    return  `<span>&#10060;</span>`;
+				}},
+              { data: null, render: function(data, type, row) {
+                  return `
+                  <button class="btn btn-primary deleteBtn" data-userid="${row.StudentNumber}" onclick="Approve(${row.StudentNumber})">Approve</button>`;
+                }
+              } 
+            ]
+          });
+        })
+        .catch(function(error) {
+          alert(error);
+        });
         }
 
-        // Generate the enrolled student status rows
-        generateEnrolledStudentStatusRows();
+        function Approve(studentNumber){
 
-        // Initialize DataTables with options
-        $('#enrolledStudentStatusTable').DataTable({
-            scrollY: '400px',
-            scrollCollapse: true,
-            lengthMenu: [10, 20, 50, 100],
-            pageLength: 10
-        });
-    </script>
+            var approve = {
+                StudentNumber: parseInt(studentNumber)
+            };
+
+            var url = endpoint + "/approve"
+
+
+
+            fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(approve)
+          })
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error('Request failed with status:', response.status);
+              }
+            })
+            .then(function(data) {
+              // Handle the response here
+              console.log(data);
+              GetEnrollmentStatus();
+            })
+            .catch(function(error) {
+              alert(error);
+            });
+
+        }
+</script>
 </body>
 </html>
